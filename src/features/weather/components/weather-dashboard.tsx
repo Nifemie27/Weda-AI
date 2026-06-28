@@ -6,12 +6,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WeatherSearch } from '@/features/search/components/weather-search';
+import { FavouritesList } from '@/features/search/components/favourites-list';
 import { useWeather } from '../hooks/use-weather';
 import { useInsights } from '../hooks/use-insights';
 import { CurrentWeather } from './current-weather';
 import { ForecastCards } from './forecast-cards';
 import { HourlyForecast } from './hourly-forecast';
 import { WeatherInsights } from './weather-insights';
+import { SaveFavouriteButton } from './save-favourite-button';
 
 export function WeatherDashboard() {
   const [searchState, setSearchState] = useState<{
@@ -36,6 +38,13 @@ export function WeatherDashboard() {
     setSearchState({ query, lat, lon });
   }, []);
 
+  const handleFavouriteSelect = useCallback(
+    (city: string, lat: number, lon: number) => {
+      handleSearch(city, lat, lon);
+    },
+    [handleSearch]
+  );
+
   return (
     <div className="space-y-8">
       <WeatherSearch onSearch={handleSearch} />
@@ -56,42 +65,72 @@ export function WeatherDashboard() {
       {weatherLoading && <WeatherSkeleton />}
 
       {weatherData && (
-        <Tabs defaultValue="overview">
-          <TabsList className="mb-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="hourly">Hourly</TabsTrigger>
-            <TabsTrigger value="insights">Travel Insights</TabsTrigger>
-          </TabsList>
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex-1 min-w-0 space-y-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">
+                {weatherData.current.location.city}, {weatherData.current.location.country}
+              </h2>
+              <SaveFavouriteButton weather={weatherData.current} />
+            </div>
 
-          <TabsContent value="overview" className="space-y-8">
-            <CurrentWeather data={weatherData.current} />
-            <ForecastCards forecast={weatherData.forecast} />
-          </TabsContent>
+            <Tabs defaultValue="overview">
+              <TabsList className="mb-6">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="hourly">Hourly</TabsTrigger>
+                <TabsTrigger value="insights">Travel Insights</TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="hourly">
-            <HourlyForecast hourly={weatherData.hourly} timezone={weatherData.current.timezone} />
-          </TabsContent>
+              <TabsContent value="overview" className="space-y-8">
+                <CurrentWeather data={weatherData.current} />
+                <ForecastCards forecast={weatherData.forecast} />
+              </TabsContent>
 
-          <TabsContent value="insights">
-            {insightsLoading ? (
-              <InsightsSkeleton />
-            ) : insightsData ? (
-              <WeatherInsights
-                summary={insightsData.summary}
-                insights={insightsData.insights}
-                travelConditions={insightsData.travelConditions}
-              />
-            ) : null}
-          </TabsContent>
-        </Tabs>
+              <TabsContent value="hourly">
+                <HourlyForecast
+                  hourly={weatherData.hourly}
+                  timezone={weatherData.current.timezone}
+                />
+              </TabsContent>
+
+              <TabsContent value="insights">
+                {insightsLoading ? (
+                  <InsightsSkeleton />
+                ) : insightsData ? (
+                  <WeatherInsights
+                    summary={insightsData.summary}
+                    insights={insightsData.insights}
+                    travelConditions={insightsData.travelConditions}
+                  />
+                ) : null}
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Favourites sidebar */}
+          <aside className="lg:w-72 shrink-0">
+            <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
+              Favourites
+            </h3>
+            <FavouritesList onSelect={handleFavouriteSelect} />
+          </aside>
+        </div>
       )}
 
       {!weatherData && !weatherLoading && !weatherError && (
-        <div className="text-center py-16 text-muted-foreground">
-          <p className="text-lg">Search for any location to see weather and travel insights.</p>
-          <p className="text-sm mt-2">
-            Try a city name, postal code, coordinates, or use your current location.
-          </p>
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex-1 text-center py-16 text-muted-foreground">
+            <p className="text-lg">Search for any location to see weather and travel insights.</p>
+            <p className="text-sm mt-2">
+              Try a city name, postal code, coordinates, or use your current location.
+            </p>
+          </div>
+          <aside className="lg:w-72 shrink-0">
+            <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
+              Favourites
+            </h3>
+            <FavouritesList onSelect={handleFavouriteSelect} />
+          </aside>
         </div>
       )}
     </div>
