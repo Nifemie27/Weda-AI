@@ -27,13 +27,17 @@ export function WeatherDashboard() {
     lon?: number;
   }>({ query: null });
 
+  const [geoAttempted, setGeoAttempted] = useState(false);
   const autoLocatedRef = useRef(false);
 
   useEffect(() => {
     if (autoLocatedRef.current || searchState.query) return;
     autoLocatedRef.current = true;
 
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      const t = setTimeout(() => setGeoAttempted(true), 0);
+      return () => clearTimeout(t);
+    }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -43,7 +47,9 @@ export function WeatherDashboard() {
           lon: position.coords.longitude,
         });
       },
-      () => {},
+      () => {
+        setGeoAttempted(true);
+      },
       { enableHighAccuracy: false, timeout: 5000, maximumAge: 600000 }
     );
   }, [searchState.query]);
@@ -175,10 +181,19 @@ export function WeatherDashboard() {
       {!weatherData && !weatherLoading && !weatherError && (
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="flex-1 text-center py-16 text-muted-foreground">
-            <p className="text-lg">Detecting your location...</p>
-            <p className="text-sm mt-2">
-              Or search for any city, postal code, or coordinates above.
-            </p>
+            {!geoAttempted ? (
+              <>
+                <p className="text-lg">Detecting your location...</p>
+                <p className="text-sm mt-2">Please allow location access when prompted.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg">Search any location to get started</p>
+                <p className="text-sm mt-2">
+                  Try a city name, postal code, coordinates, or use the location button.
+                </p>
+              </>
+            )}
           </div>
           <aside className="lg:w-72 shrink-0">
             <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
