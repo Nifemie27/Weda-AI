@@ -6,6 +6,7 @@ import {
   getPaginationParams,
   buildPaginationMeta,
   withErrorHandling,
+  getDeviceIdFromHeaders,
 } from '@/lib/api-helpers';
 import { createComparisonSchema } from '@/lib/validators';
 import { prisma } from '@/lib/prisma';
@@ -15,14 +16,16 @@ export async function GET(request: NextRequest) {
   return withErrorHandling(async () => {
     const { searchParams } = request.nextUrl;
     const { page, pageSize, skip } = getPaginationParams(searchParams);
+    const deviceId = getDeviceIdFromHeaders(request.headers);
 
     const [comparisons, total] = await Promise.all([
       prisma.weatherComparison.findMany({
+        where: { deviceId },
         orderBy: { createdAt: 'desc' },
         skip,
         take: pageSize,
       }),
-      prisma.weatherComparison.count(),
+      prisma.weatherComparison.count({ where: { deviceId } }),
     ]);
 
     return paginatedResponse(comparisons, buildPaginationMeta(total, page, pageSize));
@@ -32,6 +35,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return withErrorHandling(async () => {
     const body = await request.json();
+    const deviceId = getDeviceIdFromHeaders(request.headers);
     const parsed = createComparisonSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -42,6 +46,7 @@ export async function POST(request: NextRequest) {
 
     const comparison = await prisma.weatherComparison.create({
       data: {
+        deviceId,
         locationACity: locationA.city,
         locationACountry: locationA.country,
         locationALatitude: locationA.latitude,

@@ -7,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function HistoryPage() {
-  return <SearchHistory />;
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <SearchHistory />
+    </div>
+  );
 }

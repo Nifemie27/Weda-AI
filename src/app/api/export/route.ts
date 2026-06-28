@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server';
-import { errorResponse, withErrorHandling } from '@/lib/api-helpers';
+import { errorResponse, withErrorHandling, getDeviceIdFromHeaders } from '@/lib/api-helpers';
 import { exportRequestSchema } from '@/lib/validators';
 import { prisma } from '@/lib/prisma';
 import { toJSON, toCSV, toMarkdown, toPDF } from '@/features/export/services/export-service';
@@ -31,8 +31,9 @@ export async function POST(request: NextRequest) {
     }
 
     const { format, exportType, recordId } = parsed.data;
+    const deviceId = getDeviceIdFromHeaders(request.headers);
 
-    const { data, title } = await fetchExportData(exportType, recordId);
+    const { data, title } = await fetchExportData(exportType, recordId, deviceId);
 
     if (!data || (Array.isArray(data) && data.length === 0)) {
       return errorResponse('NO_DATA', 'No records found to export.', 404);
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
     await prisma.exportHistory
       .create({
         data: {
+          deviceId,
           format,
           exportType,
           recordId,
@@ -86,18 +88,22 @@ export async function POST(request: NextRequest) {
 
 async function fetchExportData(
   exportType: string,
-  recordId?: string
+  recordId: string | undefined,
+  deviceId: string
 ): Promise<{ data: ExportableRecord | ExportableRecord[] | null; title: string }> {
   switch (exportType) {
     case 'WEATHER_SEARCH': {
       if (recordId) {
-        const record = await prisma.weatherSearch.findUnique({ where: { id: recordId } });
+        const record = await prisma.weatherSearch.findFirst({
+          where: { id: recordId, deviceId },
+        });
         return { data: record, title: `Weather Search - ${record?.city || 'Unknown'}` };
       }
       return { data: null, title: '' };
     }
     case 'SEARCH_HISTORY': {
       const records = await prisma.weatherSearch.findMany({
+        where: { deviceId },
         orderBy: { createdAt: 'desc' },
         take: 500,
       });
@@ -105,13 +111,16 @@ async function fetchExportData(
     }
     case 'TRIP': {
       if (recordId) {
-        const record = await prisma.trip.findUnique({ where: { id: recordId } });
+        const record = await prisma.trip.findFirst({
+          where: { id: recordId, deviceId },
+        });
         return { data: record, title: `Trip - ${record?.destination || 'Unknown'}` };
       }
       return { data: null, title: '' };
     }
     case 'TRIP_HISTORY': {
       const records = await prisma.trip.findMany({
+        where: { deviceId },
         orderBy: { createdAt: 'desc' },
         take: 500,
       });

@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { getDeviceId } from '@/hooks/use-device-id';
 import type { Trip } from '@/generated/prisma/client';
 import type { PaginationMeta } from '@/types';
 import type { CreateTripInput, UpdateTripInput } from '@/lib/validators';
@@ -33,7 +34,9 @@ export function useTrips(params: TripsParams = {}) {
       if (params.search) searchParams.search = params.search;
 
       const qs = new URLSearchParams(Object.entries(searchParams).map(([k, v]) => [k, String(v)]));
-      const res = await fetch(`/api/trips?${qs}`);
+      const res = await fetch(`/api/trips?${qs}`, {
+        headers: { 'X-Device-Id': getDeviceId() },
+      });
       const json = await res.json();
       return { data: json.data, meta: json.meta };
     },

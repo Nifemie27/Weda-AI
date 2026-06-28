@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { getDeviceId } from '@/hooks/use-device-id';
 import type { FavouriteLocation } from '@/generated/prisma/client';
 import type { PaginationMeta } from '@/types';
 import type { CreateFavouriteInput, UpdateFavouriteInput } from '@/lib/validators';
@@ -17,7 +18,9 @@ export function useFavourites(search?: string) {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
-      const res = await fetch(`/api/favourites?${params}`);
+      const res = await fetch(`/api/favourites?${params}`, {
+        headers: { 'X-Device-Id': getDeviceId() },
+      });
       const json = await res.json();
       return { data: json.data, meta: json.meta };
     },

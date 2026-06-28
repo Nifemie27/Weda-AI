@@ -79,7 +79,7 @@ export function WeatherDashboard() {
 
   return (
     <WeatherBackground condition={currentCondition} isDay={isDay}>
-      <div className="space-y-8 p-1">
+      <div className="space-y-8 container mx-auto px-4 py-6">
         <WeatherSearch onSearch={handleSearch} />
 
         {weatherError && (

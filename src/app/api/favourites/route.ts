@@ -6,6 +6,7 @@ import {
   getPaginationParams,
   buildPaginationMeta,
   withErrorHandling,
+  getDeviceIdFromHeaders,
 } from '@/lib/api-helpers';
 import { createFavouriteSchema } from '@/lib/validators';
 import { prisma } from '@/lib/prisma';
@@ -15,9 +16,10 @@ export async function GET(request: NextRequest) {
   return withErrorHandling(async () => {
     const { searchParams } = request.nextUrl;
     const { page, pageSize, skip } = getPaginationParams(searchParams);
+    const deviceId = getDeviceIdFromHeaders(request.headers);
 
     const search = searchParams.get('search');
-    const where: Prisma.FavouriteLocationWhereInput = {};
+    const where: Prisma.FavouriteLocationWhereInput = { deviceId };
 
     if (search) {
       where.OR = [
@@ -44,6 +46,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return withErrorHandling(async () => {
     const body = await request.json();
+    const deviceId = getDeviceIdFromHeaders(request.headers);
     const parsed = createFavouriteSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -54,7 +57,7 @@ export async function POST(request: NextRequest) {
       where: {
         latitude: parsed.data.latitude,
         longitude: parsed.data.longitude,
-        userId: null,
+        deviceId,
       },
     });
 
@@ -65,6 +68,7 @@ export async function POST(request: NextRequest) {
     const favourite = await prisma.favouriteLocation.create({
       data: {
         ...parsed.data,
+        deviceId,
         lastWeatherSnapshot: parsed.data.lastWeatherSnapshot as Prisma.InputJsonValue,
       },
     });

@@ -61,6 +61,7 @@ model User {
 model WeatherSearch {
   id        String   @id @default(cuid())
   userId    String?  @map("user_id")
+  deviceId  String   @map("device_id")
   query     String
   latitude  Float
   longitude Float
@@ -92,6 +93,7 @@ model WeatherSearch {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([deviceId])
   @@index([city])
   @@index([createdAt])
   @@index([latitude, longitude])
@@ -105,6 +107,7 @@ model WeatherSearch {
 model Trip {
   id          String     @id @default(cuid())
   userId      String?    @map("user_id")
+  deviceId    String     @map("device_id")
   destination String
   city        String
   country     String
@@ -127,6 +130,7 @@ model Trip {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([deviceId])
   @@index([status])
   @@index([startDate])
   @@index([destination])
@@ -140,6 +144,7 @@ model Trip {
 model FavouriteLocation {
   id        String @id @default(cuid())
   userId    String? @map("user_id")
+  deviceId  String  @map("device_id")
   city      String
   country   String
   state     String?
@@ -156,8 +161,9 @@ model FavouriteLocation {
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  @@unique([userId, latitude, longitude])
+  @@unique([deviceId, latitude, longitude])
   @@index([userId])
+  @@index([deviceId])
   @@index([city])
   @@map("favourite_locations")
 }
@@ -167,8 +173,9 @@ model FavouriteLocation {
 // ─────────────────────────────────────────────
 
 model WeatherComparison {
-  id     String  @id @default(cuid())
-  userId String? @map("user_id")
+  id       String  @id @default(cuid())
+  userId   String? @map("user_id")
+  deviceId String  @map("device_id")
 
   locationACity      String  @map("location_a_city")
   locationACountry   String  @map("location_a_country")
@@ -187,6 +194,7 @@ model WeatherComparison {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([deviceId])
   @@index([createdAt])
   @@map("weather_comparisons")
 }
@@ -196,8 +204,9 @@ model WeatherComparison {
 // ─────────────────────────────────────────────
 
 model ExportHistory {
-  id     String  @id @default(cuid())
-  userId String? @map("user_id")
+  id       String  @id @default(cuid())
+  userId   String? @map("user_id")
+  deviceId String  @map("device_id")
 
   format     ExportFormat
   exportType ExportType   @map("export_type")
@@ -210,6 +219,7 @@ model ExportHistory {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([deviceId])
   @@index([createdAt])
   @@map("export_history")
 }

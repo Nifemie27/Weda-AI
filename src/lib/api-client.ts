@@ -1,4 +1,5 @@
 import type { ApiResponse } from '@/types';
+import { getDeviceId } from '@/hooks/use-device-id';
 
 class ApiError extends Error {
   constructor(
@@ -39,6 +40,7 @@ async function apiClient<T>(endpoint: string, options: FetchOptions = {}): Promi
       signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
+        'X-Device-Id': getDeviceId(),
         ...init.headers,
       },
       body: body ? JSON.stringify(body) : undefined,

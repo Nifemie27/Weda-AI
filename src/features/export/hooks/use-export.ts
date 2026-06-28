@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
+import { getDeviceId } from '@/hooks/use-device-id';
 
 interface ExportParams {
   format: 'JSON' | 'CSV' | 'PDF' | 'MARKDOWN';
@@ -13,7 +14,7 @@ export function useExport() {
     mutationFn: async (params: ExportParams) => {
       const response = await fetch('/api/export', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Device-Id': getDeviceId() },
         body: JSON.stringify(params),
       });
 

@@ -45,6 +45,10 @@ export function buildPaginationMeta(total: number, page: number, pageSize: numbe
   };
 }
 
+export function getDeviceIdFromHeaders(headers: Headers): string {
+  return headers.get('x-device-id') || 'anonymous';
+}
+
 export async function withErrorHandling(
   handler: () => Promise<NextResponse | Response>
 ): Promise<NextResponse | Response> {

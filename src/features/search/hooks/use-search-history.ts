@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { getDeviceId } from '@/hooks/use-device-id';
 import type { WeatherSearch } from '@/generated/prisma/client';
 import type { PaginationMeta } from '@/types';
 
@@ -32,7 +33,9 @@ export function useSearchHistory(params: HistoryParams = {}) {
       if (params.country) searchParams.country = params.country;
 
       const qs = new URLSearchParams(Object.entries(searchParams).map(([k, v]) => [k, String(v)]));
-      const res = await fetch(`/api/history?${qs}`);
+      const res = await fetch(`/api/history?${qs}`, {
+        headers: { 'X-Device-Id': getDeviceId() },
+      });
       const json = await res.json();
       return { data: json.data, meta: json.meta };
     },

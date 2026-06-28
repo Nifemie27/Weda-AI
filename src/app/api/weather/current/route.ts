@@ -1,5 +1,10 @@
 import { type NextRequest } from 'next/server';
-import { successResponse, errorResponse, withErrorHandling } from '@/lib/api-helpers';
+import {
+  successResponse,
+  errorResponse,
+  withErrorHandling,
+  getDeviceIdFromHeaders,
+} from '@/lib/api-helpers';
 import { weatherSearchQuerySchema } from '@/lib/validators';
 import { prisma } from '@/lib/prisma';
 import {
@@ -12,6 +17,7 @@ export async function GET(request: NextRequest) {
   return withErrorHandling(async () => {
     const { searchParams } = request.nextUrl;
     const params = Object.fromEntries(searchParams.entries());
+    const deviceId = getDeviceIdFromHeaders(request.headers);
 
     const parsed = weatherSearchQuerySchema.safeParse(params);
     if (!parsed.success) {
@@ -38,6 +44,7 @@ export async function GET(request: NextRequest) {
       prisma.weatherSearch
         .create({
           data: {
+            deviceId,
             query: q || zip || `${lat},${lon}`,
             latitude: location.latitude,
             longitude: location.longitude,
