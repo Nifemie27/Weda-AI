@@ -17,8 +17,9 @@ export function useFavourites(search?: string) {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
-      const res = await fetch(`/api/favourites?${params}`, { method: 'GET' });
-      return res.json();
+      const res = await fetch(`/api/favourites?${params}`);
+      const json = await res.json();
+      return { data: json.data, meta: json.meta };
     },
   });
 }

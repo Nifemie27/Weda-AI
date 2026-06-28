@@ -31,11 +31,10 @@ export function useSearchHistory(params: HistoryParams = {}) {
       if (params.city) searchParams.city = params.city;
       if (params.country) searchParams.country = params.country;
 
-      const res = await fetch(
-        `/api/history?${new URLSearchParams(Object.entries(searchParams).map(([k, v]) => [k, String(v)]))}`,
-        { method: 'GET' }
-      );
-      return res.json();
+      const qs = new URLSearchParams(Object.entries(searchParams).map(([k, v]) => [k, String(v)]));
+      const res = await fetch(`/api/history?${qs}`);
+      const json = await res.json();
+      return { data: json.data, meta: json.meta };
     },
   });
 }

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Play, Video, X } from 'lucide-react';
+import { Play, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,7 +15,7 @@ interface TravelVideosProps {
 }
 
 export function TravelVideos({ city }: TravelVideosProps) {
-  const { data: videos, isLoading } = useTravelVideos(city);
+  const { data: videos, isLoading, error } = useTravelVideos(city);
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
 
   if (isLoading) {
@@ -31,14 +31,27 @@ export function TravelVideos({ city }: TravelVideosProps) {
     );
   }
 
-  if (!videos || videos.length === 0) {
+  if (error || !videos || videos.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-          <Video className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground">No travel videos found for {city}.</p>
-        </CardContent>
-      </Card>
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Travel Videos — {city}</h3>
+        <Card>
+          <CardContent className="p-0 overflow-hidden rounded-lg">
+            <iframe
+              title={`Travel videos for ${city}`}
+              src={`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(city + ' travel guide')}`}
+              width="100%"
+              height="360"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="border-0"
+            />
+          </CardContent>
+        </Card>
+        <p className="text-xs text-muted-foreground mt-2">
+          Add a YouTube Data API key to see individual video thumbnails.
+        </p>
+      </div>
     );
   }
 
@@ -79,7 +92,6 @@ export function TravelVideos({ city }: TravelVideosProps) {
         ))}
       </div>
 
-      {/* Video player dialog */}
       <Dialog open={!!activeVideoId} onOpenChange={(open) => !open && setActiveVideoId(null)}>
         <DialogContent className="max-w-3xl p-0 overflow-hidden">
           <div className="flex items-center justify-between p-3 border-b">

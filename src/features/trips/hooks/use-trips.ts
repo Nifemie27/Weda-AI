@@ -32,11 +32,10 @@ export function useTrips(params: TripsParams = {}) {
       if (params.status) searchParams.status = params.status;
       if (params.search) searchParams.search = params.search;
 
-      const res = await fetch(
-        `/api/trips?${new URLSearchParams(Object.entries(searchParams).map(([k, v]) => [k, String(v)]))}`,
-        { method: 'GET' }
-      );
-      return res.json();
+      const qs = new URLSearchParams(Object.entries(searchParams).map(([k, v]) => [k, String(v)]));
+      const res = await fetch(`/api/trips?${qs}`);
+      const json = await res.json();
+      return { data: json.data, meta: json.meta };
     },
   });
 }
