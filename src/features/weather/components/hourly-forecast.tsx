@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import type { HourlyForecast as HourlyForecastType } from '../types';
 import { getWeatherIconUrl, formatTemperature } from '../utils';
@@ -22,8 +21,8 @@ export function HourlyForecast({ hourly, timezone }: HourlyForecastProps) {
   return (
     <div>
       <h3 className="text-lg font-semibold mb-4">Hourly Forecast</h3>
-      <Card>
-        <CardContent className="p-4">
+      <div className="rounded-2xl bg-white/30 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10">
+        <div className="p-4">
           <ScrollArea className="w-full">
             <div className="flex gap-4 pb-2">
               {hourly.slice(0, 24).map((hour, index) => (
@@ -47,8 +46,8 @@ export function HourlyForecast({ hourly, timezone }: HourlyForecastProps) {
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

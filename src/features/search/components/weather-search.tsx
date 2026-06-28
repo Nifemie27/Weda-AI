@@ -82,7 +82,7 @@ export function WeatherSearch({
             if (inputValue.length >= 2) setIsOpen(true);
           }}
           placeholder={placeholder}
-          className="pl-10 pr-24 h-12 text-base"
+          className="pl-10 pr-24 h-12 text-base bg-white/40 dark:bg-black/20 backdrop-blur-md border-white/30 dark:border-white/10"
           aria-label="Search for a location"
           aria-expanded={isOpen}
           aria-autocomplete="list"
@@ -124,7 +124,7 @@ export function WeatherSearch({
 
       {isOpen && (suggestions?.length || isSearching) && (
         <div
-          className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg"
+          className="absolute z-50 mt-1 w-full rounded-xl border border-white/20 dark:border-white/10 bg-white/70 dark:bg-black/50 backdrop-blur-xl shadow-lg"
           role="listbox"
         >
           {isSearching ? (

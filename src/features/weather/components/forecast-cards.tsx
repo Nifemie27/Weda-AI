@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Droplets, Wind, Thermometer, CloudRain, Eye } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import type { ForecastDay } from '../types';
@@ -34,11 +33,14 @@ export function ForecastCards({ forecast }: ForecastCardsProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.08 }}
           >
-            <Card
-              className="h-full cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+            <div
+              className="h-full cursor-pointer hover:ring-2 hover:ring-white/30 transition-all rounded-2xl bg-white/30 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10"
               onClick={() => setSelectedDay(day)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && setSelectedDay(day)}
             >
-              <CardContent className="p-4 flex flex-col items-center text-center">
+              <div className="p-4 flex flex-col items-center text-center">
                 <p className="text-sm font-medium">
                   {index === 0 ? 'Today' : formatDate(day.date)}
                 </p>
@@ -69,8 +71,8 @@ export function ForecastCards({ forecast }: ForecastCardsProps) {
                     {formatWindSpeed(day.windSpeed)}
                   </span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
         ))}
       </div>

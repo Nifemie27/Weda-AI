@@ -83,16 +83,14 @@ export function WeatherDashboard() {
         <WeatherSearch onSearch={handleSearch} />
 
         {weatherError && (
-          <Card className="border-destructive/50">
-            <CardContent className="flex items-center gap-3 p-4">
-              <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
-              <p className="text-sm text-destructive">
-                {weatherError instanceof Error
-                  ? weatherError.message
-                  : 'Failed to load weather data. Please try again.'}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="rounded-2xl bg-red-500/10 backdrop-blur-md border border-red-500/20 p-4 flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {weatherError instanceof Error
+                ? weatherError.message
+                : 'Failed to load weather data. Please try again.'}
+            </p>
+          </div>
         )}
 
         {weatherLoading && <WeatherSkeleton />}
