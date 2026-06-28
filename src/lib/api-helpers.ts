@@ -46,8 +46,8 @@ export function buildPaginationMeta(total: number, page: number, pageSize: numbe
 }
 
 export async function withErrorHandling(
-  handler: () => Promise<NextResponse>
-): Promise<NextResponse> {
+  handler: () => Promise<NextResponse | Response>
+): Promise<NextResponse | Response> {
   try {
     return await handler();
   } catch (error) {
