@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,4 +5,211 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum TripStatus {
+  PLANNING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ExportFormat {
+  JSON
+  CSV
+  PDF
+  MARKDOWN
+}
+
+enum ExportType {
+  WEATHER_SEARCH
+  TRIP
+  SEARCH_HISTORY
+  TRIP_HISTORY
+  COMPARISON
+}
+
+// ─────────────────────────────────────────────
+// User (optional — for future auth)
+// ─────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  searches    WeatherSearch[]
+  trips       Trip[]
+  favourites  FavouriteLocation[]
+  comparisons WeatherComparison[]
+  exports     ExportHistory[]
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// WeatherSearch — every search with weather snapshot
+// ─────────────────────────────────────────────
+
+model WeatherSearch {
+  id        String   @id @default(cuid())
+  userId    String?  @map("user_id")
+  query     String
+  latitude  Float
+  longitude Float
+  city      String
+  country   String
+  state     String?
+
+  temperature   Float
+  feelsLike     Float    @map("feels_like")
+  humidity      Int
+  pressure      Int
+  windSpeed     Float    @map("wind_speed")
+  visibility    Int
+  cloudCoverage Int      @map("cloud_coverage")
+  condition     String
+  conditionIcon String   @map("condition_icon")
+  sunrise       DateTime
+  sunset        DateTime
+  timezone      Int
+  uvIndex       Float?   @map("uv_index")
+  airQualityIndex Int?   @map("air_quality_index")
+  rainProbability Float? @map("rain_probability")
+  snowProbability Float? @map("snow_probability")
+
+  forecastSnapshot Json?  @map("forecast_snapshot")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([city])
+  @@index([createdAt])
+  @@index([latitude, longitude])
+  @@map("weather_searches")
+}
+
+// ─────────────────────────────────────────────
+// Trip — user-created travel plans
+// ─────────────────────────────────────────────
+
+model Trip {
+  id          String     @id @default(cuid())
+  userId      String?    @map("user_id")
+  destination String
+  city        String
+  country     String
+  latitude    Float
+  longitude   Float
+
+  startDate   DateTime   @map("start_date")
+  endDate     DateTime   @map("end_date")
+  status      TripStatus @default(PLANNING)
+
+  notes         String?  @db.Text
+  packingNotes  String?  @map("packing_notes") @db.Text
+  isFavourite   Boolean  @default(false) @map("is_favourite")
+
+  weatherSnapshot Json?  @map("weather_snapshot")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
+  @@index([destination])
+  @@map("trips")
+}
+
+// ─────────────────────────────────────────────
+// FavouriteLocation — bookmarked destinations
+// ─────────────────────────────────────────────
+
+model FavouriteLocation {
+  id        String @id @default(cuid())
+  userId    String? @map("user_id")
+  city      String
+  country   String
+  state     String?
+  latitude  Float
+  longitude Float
+
+  nickname  String?
+  notes     String? @db.Text
+
+  lastWeatherSnapshot Json? @map("last_weather_snapshot")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, latitude, longitude])
+  @@index([userId])
+  @@index([city])
+  @@map("favourite_locations")
+}
+
+// ─────────────────────────────────────────────
+// WeatherComparison — stored side-by-side comparisons
+// ─────────────────────────────────────────────
+
+model WeatherComparison {
+  id     String  @id @default(cuid())
+  userId String? @map("user_id")
+
+  locationACity      String  @map("location_a_city")
+  locationACountry   String  @map("location_a_country")
+  locationALatitude  Float   @map("location_a_latitude")
+  locationALongitude Float   @map("location_a_longitude")
+  locationASnapshot  Json    @map("location_a_snapshot")
+
+  locationBCity      String  @map("location_b_city")
+  locationBCountry   String  @map("location_b_country")
+  locationBLatitude  Float   @map("location_b_latitude")
+  locationBLongitude Float   @map("location_b_longitude")
+  locationBSnapshot  Json    @map("location_b_snapshot")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("weather_comparisons")
+}
+
+// ─────────────────────────────────────────────
+// ExportHistory — audit trail of exports
+// ─────────────────────────────────────────────
+
+model ExportHistory {
+  id     String  @id @default(cuid())
+  userId String? @map("user_id")
+
+  format     ExportFormat
+  exportType ExportType   @map("export_type")
+  recordId   String?      @map("record_id")
+  recordCount Int         @map("record_count")
+  fileName   String       @map("file_name")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("export_history")
 }
