@@ -138,17 +138,6 @@ function CloudsEffect({ dark = false }: { dark?: boolean }) {
         className={`absolute top-5 left-[75%] w-64 h-20 ${baseColor} rounded-full blur-2xl`}
         style={{ animation: 'drift 30s ease-in-out infinite', animationDelay: '5s' }}
       />
-      <style jsx>{`
-        @keyframes drift {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          50% {
-            transform: translateX(-80px);
-          }
-        }
-      `}</style>
     </>
   );
 }
@@ -180,21 +169,6 @@ function RainEffect({ heavy = false }: { heavy?: boolean }) {
           }}
         />
       ))}
-      <style jsx>{`
-        @keyframes rainfall {
-          0% {
-            transform: translateY(-20px);
-            opacity: 0;
-          }
-          10% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(100vh);
-            opacity: 0;
-          }
-        }
-      `}</style>
     </>
   );
 }
@@ -221,7 +195,6 @@ function SnowEffect() {
       left: v[i * 4] * 100,
       speed: 3 + v[i * 4 + 1] * 4,
       delay: v[i * 4 + 2] * 5,
-      drift: v[i * 4 + 3] > 0.5 ? 30 : -30,
     }));
   }, []);
 
@@ -239,21 +212,6 @@ function SnowEffect() {
           }}
         />
       ))}
-      <style jsx>{`
-        @keyframes snowfall {
-          0% {
-            transform: translateY(-10px) translateX(0);
-            opacity: 0;
-          }
-          10% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(100vh) translateX(30px);
-            opacity: 0;
-          }
-        }
-      `}</style>
     </>
   );
 }
