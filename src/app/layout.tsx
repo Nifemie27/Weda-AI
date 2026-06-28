@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { AppProviders } from '@/providers';
+import { OfflineBanner } from '@/components/common/offline-banner';
 import './globals.css';
 
 const inter = Inter({
@@ -37,6 +38,7 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans overflow-x-hidden">
+        <OfflineBanner />
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

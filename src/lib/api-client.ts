@@ -21,6 +21,10 @@ interface FetchOptions extends Omit<RequestInit, 'body'> {
 async function apiClient<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { body, params, timeout = 10000, ...init } = options;
 
+  if (typeof window !== 'undefined' && !navigator.onLine) {
+    throw new ApiError(0, 'OFFLINE', 'You are offline. Please check your internet connection.');
+  }
+
   const url = new URL(endpoint, window.location.origin);
 
   if (params) {
@@ -46,6 +50,26 @@ async function apiClient<T>(endpoint: string, options: FetchOptions = {}): Promi
       body: body ? JSON.stringify(body) : undefined,
     });
 
+    if (response.status === 404) {
+      throw new ApiError(
+        404,
+        'NOT_FOUND',
+        'Location not found. Please check the name and try again.'
+      );
+    }
+
+    if (response.status === 429) {
+      throw new ApiError(
+        429,
+        'RATE_LIMIT',
+        'Too many requests. Please wait a moment and try again.'
+      );
+    }
+
+    if (response.status >= 500) {
+      throw new ApiError(response.status, 'SERVER_ERROR', 'Server error. Please try again later.');
+    }
+
     const data: ApiResponse<T> = await response.json();
 
     if (!data.success) {
@@ -57,10 +81,22 @@ async function apiClient<T>(endpoint: string, options: FetchOptions = {}): Promi
     if (error instanceof ApiError) throw error;
 
     if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new ApiError(408, 'TIMEOUT', 'Request timed out');
+      throw new ApiError(
+        408,
+        'TIMEOUT',
+        'Request timed out. Please check your connection and try again.'
+      );
     }
 
-    throw new ApiError(500, 'NETWORK_ERROR', 'A network error occurred. Please try again.');
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new ApiError(0, 'OFFLINE', 'Unable to connect. Please check your internet connection.');
+    }
+
+    throw new ApiError(
+      500,
+      'NETWORK_ERROR',
+      'Something went wrong. Please check your connection and try again.'
+    );
   } finally {
     clearTimeout(timeoutId);
   }
