@@ -8,13 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { createTripSchema, type CreateTripInput } from '@/lib/validators';
 import type { Trip } from '@/generated/prisma/client';
 
@@ -30,7 +23,6 @@ export function TripForm({ trip, onSubmit, onCancel, isPending }: TripFormProps)
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(createTripSchema),
@@ -154,22 +146,17 @@ export function TripForm({ trip, onSubmit, onCancel, isPending }: TripFormProps)
           {trip && (
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select
-                value={watch('isFavourite') ? 'true' : 'false'}
-                defaultValue={status}
+              <select
+                value={status}
                 disabled
+                className="w-full h-9 rounded-md border bg-background px-3 text-sm disabled:opacity-50"
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PLANNING">Planning</SelectItem>
-                  <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="PLANNING">Planning</option>
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
             </div>
           )}
 

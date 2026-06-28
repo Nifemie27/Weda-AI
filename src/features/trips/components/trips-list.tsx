@@ -18,13 +18,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTrips, useCreateTrip, useUpdateTrip, useDeleteTrip } from '../hooks/use-trips';
 import { ExportButton } from '@/features/export/components/export-button';
@@ -130,25 +123,21 @@ export function TripsList() {
             className="pl-10"
           />
         </div>
-        <Select
+        <select
           value={statusFilter}
-          onValueChange={(val: string | null) => {
-            setStatusFilter(val ?? 'all');
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
             setPage(1);
           }}
+          className="h-9 rounded-md border bg-background px-3 text-sm"
         >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All statuses" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="PLANNING">Planning</SelectItem>
-            <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-            <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-            <SelectItem value="COMPLETED">Completed</SelectItem>
-            <SelectItem value="CANCELLED">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
+          <option value="all">All Statuses</option>
+          <option value="PLANNING">Planning</option>
+          <option value="CONFIRMED">Confirmed</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
       </div>
 
       {/* Trips list */}

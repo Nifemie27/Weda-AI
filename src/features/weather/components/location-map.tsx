@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface LocationMapProps {
   latitude: number;
@@ -12,29 +13,53 @@ interface LocationMapProps {
 }
 
 export function LocationMap({ latitude, longitude, city, className }: LocationMapProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
 
-  const googleKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  useEffect(() => {
+    if (!mapRef.current) return;
 
-  const src = googleKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${googleKey}&q=${latitude},${longitude}&zoom=11&maptype=roadmap`
-    : `https://www.openstreetmap.org/export/embed.html?bbox=${longitude - 0.05},${latitude - 0.03},${longitude + 0.05},${latitude + 0.03}&layer=mapnik&marker=${latitude},${longitude}`;
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setView([latitude, longitude], 12);
+      mapInstanceRef.current.eachLayer((layer) => {
+        if (layer instanceof L.Marker) {
+          mapInstanceRef.current!.removeLayer(layer);
+        }
+      });
+      L.marker([latitude, longitude]).addTo(mapInstanceRef.current).bindPopup(city).openPopup();
+      return;
+    }
+
+    const map = L.map(mapRef.current).setView([latitude, longitude], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(map);
+
+    const icon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+    });
+
+    L.marker([latitude, longitude], { icon }).addTo(map).bindPopup(city).openPopup();
+
+    mapInstanceRef.current = map;
+
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+    };
+  }, [latitude, longitude, city]);
 
   return (
     <Card className={className}>
       <CardContent className="p-0 overflow-hidden rounded-lg">
-        {!isLoaded && <Skeleton className="w-full h-72" />}
-        <iframe
-          title={`Map of ${city}`}
-          src={src}
-          width="100%"
-          height="288"
-          style={{ border: 0, display: isLoaded ? 'block' : 'none' }}
-          allowFullScreen
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          onLoad={() => setIsLoaded(true)}
-        />
+        <div ref={mapRef} className="h-72 w-full z-0" />
       </CardContent>
     </Card>
   );

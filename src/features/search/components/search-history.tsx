@@ -3,18 +3,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { Trash2, Search, ChevronLeft, ChevronRight, ArrowUpDown, CloudSun } from 'lucide-react';
+import { Trash2, Search, ChevronLeft, ChevronRight, CloudSun } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSearchHistory, useDeleteSearch, useClearHistory } from '../hooks/use-search-history';
 import { ExportButton } from '@/features/export/components/export-button';
@@ -69,7 +62,6 @@ export function SearchHistory() {
         )}
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -83,34 +75,28 @@ export function SearchHistory() {
             className="pl-10"
           />
         </div>
-        <Select
+        <select
           value={sortBy}
-          onValueChange={(val: string | null) => {
-            setSortBy(val ?? 'createdAt');
+          onChange={(e) => {
+            setSortBy(e.target.value);
             setPage(1);
           }}
+          className="h-9 rounded-md border bg-background px-3 text-sm"
         >
-          <SelectTrigger className="w-[180px]">
-            <ArrowUpDown className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="createdAt">Date</SelectItem>
-            <SelectItem value="city">City</SelectItem>
-            <SelectItem value="temperature">Temperature</SelectItem>
-          </SelectContent>
-        </Select>
+          <option value="createdAt">Sort by Date</option>
+          <option value="city">Sort by City</option>
+          <option value="temperature">Sort by Temperature</option>
+        </select>
         <Button
           variant="outline"
           size="icon"
           onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
           aria-label={`Sort ${sortOrder === 'asc' ? 'descending' : 'ascending'}`}
         >
-          <ArrowUpDown className="h-4 w-4" />
+          {sortOrder === 'asc' ? '↑' : '↓'}
         </Button>
       </div>
 
-      {/* List */}
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -178,7 +164,6 @@ export function SearchHistory() {
         </AnimatePresence>
       )}
 
-      {/* Pagination */}
       {meta && meta.totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
