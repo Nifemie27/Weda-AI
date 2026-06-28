@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Star,
   Calendar,
+  ChevronRight as ViewIcon,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTrips, useCreateTrip, useUpdateTrip, useDeleteTrip } from '../hooks/use-trips';
 import { ExportButton } from '@/features/export/components/export-button';
 import { TripForm } from './trip-form';
+import { TripDetail } from './trip-detail';
 import type { CreateTripInput, UpdateTripInput } from '@/lib/validators';
 import type { Trip } from '@/generated/prisma/client';
 
@@ -39,6 +41,7 @@ export function TripsList() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showForm, setShowForm] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+  const [viewingTrip, setViewingTrip] = useState<Trip | null>(null);
 
   const { data, isLoading } = useTrips({
     page,
@@ -66,9 +69,27 @@ export function TripsList() {
     if (!editingTrip) return;
     updateTrip.mutate(
       { id: editingTrip.id, data: formData as UpdateTripInput },
-      { onSuccess: () => setEditingTrip(null) }
+      {
+        onSuccess: () => {
+          setEditingTrip(null);
+          setViewingTrip(null);
+        },
+      }
     );
   };
+
+  if (viewingTrip) {
+    return (
+      <TripDetail
+        trip={viewingTrip}
+        onBack={() => setViewingTrip(null)}
+        onEdit={() => {
+          setEditingTrip(viewingTrip);
+          setViewingTrip(null);
+        }}
+      />
+    );
+  }
 
   if (showForm) {
     return (
@@ -109,7 +130,6 @@ export function TripsList() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -140,7 +160,6 @@ export function TripsList() {
         </select>
       </div>
 
-      {/* Trips list */}
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -173,7 +192,10 @@ export function TripsList() {
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ duration: 0.2 }}
               >
-                <Card>
+                <Card
+                  className="cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                  onClick={() => setViewingTrip(trip)}
+                >
                   <CardContent className="flex items-center justify-between p-4">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -206,7 +228,10 @@ export function TripsList() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => setEditingTrip(trip)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingTrip(trip);
+                        }}
                         aria-label={`Edit ${trip.destination}`}
                       >
                         <Pencil className="h-4 w-4" />
@@ -215,7 +240,8 @@ export function TripsList() {
                         variant="ghost"
                         size="icon"
                         className="text-muted-foreground hover:text-destructive"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           if (confirm(`Delete trip to ${trip.destination}?`)) {
                             deleteTrip.mutate(trip.id);
                           }
@@ -225,6 +251,7 @@ export function TripsList() {
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
+                      <ViewIcon className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </CardContent>
                 </Card>
@@ -234,7 +261,6 @@ export function TripsList() {
         </AnimatePresence>
       )}
 
-      {/* Pagination */}
       {meta && meta.totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">

@@ -1,15 +1,19 @@
 'use client';
 
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
+import { MapPin, Loader2, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useDebounce } from '@/hooks';
 import { createTripSchema, type CreateTripInput } from '@/lib/validators';
 import type { Trip } from '@/generated/prisma/client';
+import type { GeocodingResult } from '@/features/weather/types';
 
 interface TripFormProps {
   trip?: Trip;
@@ -19,10 +23,19 @@ interface TripFormProps {
 }
 
 export function TripForm({ trip, onSubmit, onCancel, isPending }: TripFormProps) {
+  const [destinationInput, setDestinationInput] = useState(trip?.destination || '');
+  const [suggestions, setSuggestions] = useState<GeocodingResult[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+  const [locationResolved, setLocationResolved] = useState(!!trip);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const debouncedDestination = useDebounce(destinationInput, 400);
+
   const {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(createTripSchema),
@@ -53,11 +66,58 @@ export function TripForm({ trip, onSubmit, onCancel, isPending }: TripFormProps)
         },
   });
 
-  const status = trip?.status;
+  const latitude = watch('latitude');
+  const longitude = watch('longitude');
+
+  useEffect(() => {
+    if (debouncedDestination.length < 2 || locationResolved) {
+      setSuggestions([]);
+      return;
+    }
+
+    setGeocoding(true);
+    fetch(`/api/geocode?q=${encodeURIComponent(debouncedDestination)}`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) {
+          setSuggestions(json.data);
+          setShowSuggestions(json.data.length > 0);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setGeocoding(false));
+  }, [debouncedDestination, locationResolved]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelectLocation = useCallback(
+    (result: GeocodingResult) => {
+      setDestinationInput(result.displayName);
+      setValue('destination', result.displayName);
+      setValue('city', result.name);
+      setValue('country', result.country);
+      setValue('latitude', result.latitude);
+      setValue('longitude', result.longitude);
+      setLocationResolved(true);
+      setShowSuggestions(false);
+      setSuggestions([]);
+    },
+    [setValue]
+  );
 
   const handleFormSubmit = (data: FieldValues) => {
     onSubmit(data as CreateTripInput);
   };
+
+  const status = trip?.status;
 
   return (
     <Card>
@@ -66,49 +126,53 @@ export function TripForm({ trip, onSubmit, onCancel, isPending }: TripFormProps)
           <h2 className="text-xl font-semibold">{trip ? 'Edit Trip' : 'Plan a New Trip'}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
+            {/* Destination with autocomplete */}
+            <div className="space-y-2 md:col-span-2" ref={containerRef}>
               <Label htmlFor="destination">Destination</Label>
-              <Input
-                id="destination"
-                {...register('destination')}
-                placeholder="e.g. Paris, France"
-              />
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="destination"
+                  value={destinationInput}
+                  onChange={(e) => {
+                    setDestinationInput(e.target.value);
+                    setLocationResolved(false);
+                    setValue('destination', e.target.value);
+                  }}
+                  placeholder="Start typing a city name..."
+                  className="pl-10 pr-10"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {geocoding && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                  {locationResolved && !geocoding && <Check className="h-4 w-4 text-green-500" />}
+                </div>
+              </div>
               {errors.destination && (
                 <p className="text-xs text-destructive">{errors.destination.message}</p>
               )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input id="city" {...register('city')} placeholder="Paris" />
-              {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="country">Country</Label>
-              <Input id="country" {...register('country')} placeholder="France" />
-              {errors.country && (
-                <p className="text-xs text-destructive">{errors.country.message}</p>
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute z-50 mt-1 w-full max-w-lg rounded-md border bg-popover shadow-lg">
+                  {suggestions.map((result, index) => (
+                    <button
+                      key={`${result.latitude}-${result.longitude}-${index}`}
+                      type="button"
+                      className="flex items-center gap-3 w-full px-4 py-3 text-left text-sm hover:bg-accent transition-colors first:rounded-t-md last:rounded-b-md"
+                      onClick={() => handleSelectLocation(result)}
+                    >
+                      <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span>{result.displayName}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {locationResolved && (
+                <p className="text-xs text-muted-foreground">
+                  {watch('city')}, {watch('country')} — {Number(latitude).toFixed(4)}°,{' '}
+                  {Number(longitude).toFixed(4)}°
+                </p>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-2">
-                <Label htmlFor="latitude">Latitude</Label>
-                <Input
-                  id="latitude"
-                  type="number"
-                  step="any"
-                  {...register('latitude', { valueAsNumber: true })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="longitude">Longitude</Label>
-                <Input
-                  id="longitude"
-                  type="number"
-                  step="any"
-                  {...register('longitude', { valueAsNumber: true })}
-                />
-              </div>
-            </div>
+
             <div className="space-y-2">
               <Label htmlFor="startDate">Start Date</Label>
               <Input
@@ -191,7 +255,7 @@ export function TripForm({ trip, onSubmit, onCancel, isPending }: TripFormProps)
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending || (!locationResolved && !trip)}>
               {isPending ? 'Saving...' : trip ? 'Update Trip' : 'Create Trip'}
             </Button>
           </div>
