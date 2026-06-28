@@ -10,7 +10,7 @@ import { APP_NAME } from '@/lib/constants';
 import { useState } from 'react';
 
 const navigation = [
-  { name: 'Dashboard', href: '/' },
+  { name: 'Dashboard', href: '/weather' },
   { name: 'Compare', href: '/compare' },
   { name: 'Trips', href: '/trips' },
   { name: 'History', href: '/history' },
