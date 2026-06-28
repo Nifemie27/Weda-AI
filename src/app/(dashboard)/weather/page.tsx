@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { WeatherDashboard } from '@/features/weather/components';
 
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function WeatherPage() {
-  return <WeatherDashboard />;
+  return (
+    <Suspense>
+      <WeatherDashboard />
+    </Suspense>
+  );
 }
