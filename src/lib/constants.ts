@@ -1,4 +1,4 @@
-export const APP_NAME = 'Wéda Weather';
+export const APP_NAME = 'Wéda AI';
 export const APP_DESCRIPTION =
   'AI-powered Weather & Travel Assistant for informed travel decisions.';
 export const DEVELOPER_NAME = 'Oluwanifemi Oripeloye';

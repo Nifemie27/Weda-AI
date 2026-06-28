@@ -6,13 +6,13 @@ services:
     environment:
       POSTGRES_USER: weda
       POSTGRES_PASSWORD: weda_local_dev
-      POSTGRES_DB: weda_weather
+      POSTGRES_DB: weda_ai
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U weda -d weda_weather"]
+      test: ["CMD-SHELL", "pg_isready -U weda -d weda_ai"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -28,8 +28,8 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql://weda:weda_local_dev@db:5432/weda_weather
-      DIRECT_URL: postgresql://weda:weda_local_dev@db:5432/weda_weather
+      DATABASE_URL: postgresql://weda:weda_local_dev@db:5432/weda_ai
+      DIRECT_URL: postgresql://weda:weda_local_dev@db:5432/weda_ai
     depends_on:
       db:
         condition: service_healthy

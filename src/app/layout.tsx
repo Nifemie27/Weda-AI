@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Wéda Weather — AI Travel Assistant',
-    template: '%s | Wéda Weather',
+    default: 'Wéda AI — Weather & Travel Assistant',
+    template: '%s | Wéda AI',
   },
   description:
     'AI-powered Weather & Travel Assistant. Get real-time weather data, travel insights, packing recommendations, and destination comparisons.',

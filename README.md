@@ -1,6 +1,6 @@
-# Wéda Weather — AI-Powered Weather & Travel Assistant
+# Wéda AI — AI-Powered Weather & Travel Assistant
 
-An intelligent weather and travel assistant that helps users make informed travel decisions. Rather than simply displaying weather data, Wéda Weather answers: **"What should I know before travelling here?"**
+An intelligent weather and travel assistant that helps users make informed travel decisions. Rather than simply displaying weather data, Wéda AI answers: **"What should I know before travelling here?"**
 
 Built by **Oluwanifemi Oripeloye** as part of the [PM Accelerator](https://www.pmaccelerator.io/) AI Engineering programme.
 
@@ -188,7 +188,7 @@ Every layer has a single responsibility. UI components never call APIs directly.
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd weda-weather
+cd weda-ai
 
 # Install dependencies
 npm install
@@ -264,8 +264,8 @@ The project includes a multi-stage Dockerfile and docker-compose for containeris
 docker compose up --build
 
 # Or build the image standalone
-docker build -t weda-weather .
-docker run -p 3000:3000 --env-file .env.local weda-weather
+docker build -t weda-ai .
+docker run -p 3000:3000 --env-file .env.local weda-ai
 ```
 
 The Dockerfile uses a 3-stage build:
@@ -305,7 +305,7 @@ npm start
 ## Folder Structure
 
 ```
-weda-weather/
+weda-ai/
 ├── prisma/
 │   ├── schema.prisma          # Database schema (6 tables, 3 enums)
 │   └── migrations/            # Migration history

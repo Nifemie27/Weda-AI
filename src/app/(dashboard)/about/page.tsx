@@ -5,7 +5,7 @@ import { APP_NAME, DEVELOPER_NAME } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'About',
-  description: 'About Wéda Weather and PM Accelerator.',
+  description: 'About Wéda AI and PM Accelerator.',
 };
 
 export default function AboutPage() {

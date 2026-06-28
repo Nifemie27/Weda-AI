@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# Wéda Weather — AI-Powered Weather & Travel Assistant
+# Wéda AI — AI-Powered Weather & Travel Assistant
 
 ## Quick Reference
 
