@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { Trash2, Search, ChevronLeft, ChevronRight, CloudSun } from 'lucide-react';
@@ -27,6 +28,7 @@ export function SearchHistory() {
     city: cityFilter || undefined,
   });
 
+  const router = useRouter();
   const deleteSearch = useDeleteSearch();
   const clearHistory = useClearHistory();
 
@@ -125,7 +127,14 @@ export function SearchHistory() {
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ duration: 0.2 }}
               >
-                <Card>
+                <Card
+                  className="cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                  onClick={() =>
+                    router.push(
+                      `/weather?lat=${search.latitude}&lon=${search.longitude}&q=${encodeURIComponent(search.city)}`
+                    )
+                  }
+                >
                   <CardContent className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-4 min-w-0">
                       <div className="min-w-0">
@@ -158,7 +167,10 @@ export function SearchHistory() {
                       variant="ghost"
                       size="icon"
                       className="shrink-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => deleteSearch.mutate(search.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteSearch.mutate(search.id);
+                      }}
                       disabled={deleteSearch.isPending}
                       aria-label={`Delete search for ${search.city}`}
                     >

@@ -45,12 +45,14 @@ export function WeatherBackground({ condition, isDay = true, children }: Weather
   const gradient = gradients[key] || gradients.default;
 
   return (
-    <div
-      className={`relative min-h-full overflow-x-hidden transition-colors duration-1000 bg-gradient-to-br ${gradient}`}
-    >
-      <WeatherEffects condition={condition} isDay={isDay} />
-      <div className="relative z-10">{children}</div>
-    </div>
+    <>
+      <div
+        className={`fixed inset-0 -z-10 transition-colors duration-1000 bg-gradient-to-br ${gradient}`}
+      >
+        <WeatherEffects condition={condition} isDay={isDay} />
+      </div>
+      {children}
+    </>
   );
 }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,11 +22,25 @@ import { LocationMap } from './location-map';
 import { SaveFavouriteButton } from './save-favourite-button';
 
 export function WeatherDashboard() {
+  const urlParams = useSearchParams();
+
   const [searchState, setSearchState] = useState<{
     query: string | null;
     lat?: number;
     lon?: number;
-  }>({ query: null });
+  }>(() => {
+    const urlLat = urlParams.get('lat');
+    const urlLon = urlParams.get('lon');
+    const urlQ = urlParams.get('q');
+    if (urlLat && urlLon) {
+      return {
+        query: urlQ || `${urlLat},${urlLon}`,
+        lat: parseFloat(urlLat),
+        lon: parseFloat(urlLon),
+      };
+    }
+    return { query: null };
+  });
 
   const autoLocatedRef = useRef(false);
 
