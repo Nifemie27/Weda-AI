@@ -14,6 +14,7 @@ import {
   Snowflake,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { LocalTime } from './local-time';
 import type { CurrentWeather as CurrentWeatherType } from '../types';
 import {
   getWeatherIconUrl,
@@ -72,7 +73,11 @@ export function CurrentWeather({ data }: CurrentWeatherProps) {
               {data.location.state ? `${data.location.state}, ` : ''}
               {data.location.country}
             </p>
-            <p className="text-xs text-foreground/50 mt-1">
+            <LocalTime
+              timezoneOffset={data.timezone}
+              className="justify-end text-sm text-foreground/70 mt-1"
+            />
+            <p className="text-xs text-foreground/50 mt-0.5">
               {data.location.latitude.toFixed(4)}°, {data.location.longitude.toFixed(4)}°
             </p>
           </div>
