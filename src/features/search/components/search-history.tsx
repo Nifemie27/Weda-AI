@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSearchHistory, useDeleteSearch, useClearHistory } from '../hooks/use-search-history';
+import { ExportButton } from '@/features/export/components/export-button';
 import { formatTemperature } from '@/features/weather/utils';
 
 export function SearchHistory() {
@@ -49,19 +50,22 @@ export function SearchHistory() {
           </p>
         </div>
         {searches.length > 0 && (
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => {
-              if (confirm('Clear all search history? This cannot be undone.')) {
-                clearHistory.mutate();
-              }
-            }}
-            disabled={clearHistory.isPending}
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Clear All
-          </Button>
+          <div className="flex items-center gap-2">
+            <ExportButton exportType="SEARCH_HISTORY" label="Export" />
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                if (confirm('Clear all search history? This cannot be undone.')) {
+                  clearHistory.mutate();
+                }
+              }}
+              disabled={clearHistory.isPending}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Clear All
+            </Button>
+          </div>
         )}
       </div>
 

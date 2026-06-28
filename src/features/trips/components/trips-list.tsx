@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTrips, useCreateTrip, useUpdateTrip, useDeleteTrip } from '../hooks/use-trips';
+import { ExportButton } from '@/features/export/components/export-button';
 import { TripForm } from './trip-form';
 import type { CreateTripInput, UpdateTripInput } from '@/lib/validators';
 import type { Trip } from '@/generated/prisma/client';
@@ -106,10 +107,13 @@ export function TripsList() {
             {meta ? `${meta.total} trips planned` : 'Loading...'}
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-1" />
-          New Trip
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportButton exportType="TRIP_HISTORY" label="Export" />
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            New Trip
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

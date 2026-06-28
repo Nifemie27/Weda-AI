@@ -7,12 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WeatherSearch } from '@/features/search/components/weather-search';
 import { FavouritesList } from '@/features/search/components/favourites-list';
+import { TravelVideos } from '@/features/travel/components/travel-videos';
 import { useWeather } from '../hooks/use-weather';
 import { useInsights } from '../hooks/use-insights';
 import { CurrentWeather } from './current-weather';
 import { ForecastCards } from './forecast-cards';
 import { HourlyForecast } from './hourly-forecast';
 import { WeatherInsights } from './weather-insights';
+import { LocationMap } from './location-map';
 import { SaveFavouriteButton } from './save-favourite-button';
 
 export function WeatherDashboard() {
@@ -79,6 +81,7 @@ export function WeatherDashboard() {
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="hourly">Hourly</TabsTrigger>
                 <TabsTrigger value="insights">Travel Insights</TabsTrigger>
+                <TabsTrigger value="destination">Destination</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-8">
@@ -103,6 +106,15 @@ export function WeatherDashboard() {
                     travelConditions={insightsData.travelConditions}
                   />
                 ) : null}
+              </TabsContent>
+
+              <TabsContent value="destination" className="space-y-8">
+                <LocationMap
+                  latitude={weatherData.current.location.latitude}
+                  longitude={weatherData.current.location.longitude}
+                  city={weatherData.current.location.city}
+                />
+                <TravelVideos city={weatherData.current.location.city} />
               </TabsContent>
             </Tabs>
           </div>
