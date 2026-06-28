@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { WeatherBackground } from '@/components/common/weather-background';
 import { WeatherSearch } from '@/features/search/components/weather-search';
 import { FavouritesList } from '@/features/search/components/favourites-list';
 import { TravelVideos } from '@/features/travel/components/travel-videos';
@@ -25,6 +26,27 @@ export function WeatherDashboard() {
     lat?: number;
     lon?: number;
   }>({ query: null });
+
+  const autoLocatedRef = useRef(false);
+
+  useEffect(() => {
+    if (autoLocatedRef.current || searchState.query) return;
+    autoLocatedRef.current = true;
+
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setSearchState({
+          query: `${position.coords.latitude.toFixed(4)},${position.coords.longitude.toFixed(4)}`,
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        });
+      },
+      () => {},
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 600000 }
+    );
+  }, [searchState.query]);
 
   const {
     data: weatherData,
@@ -49,115 +71,122 @@ export function WeatherDashboard() {
     [handleSearch]
   );
 
+  const currentCondition = weatherData?.current?.condition;
+  const isDay = weatherData?.current
+    ? new Date() > new Date(weatherData.current.sunrise) &&
+      new Date() < new Date(weatherData.current.sunset)
+    : true;
+
   return (
-    <div className="space-y-8">
-      <WeatherSearch onSearch={handleSearch} />
+    <WeatherBackground condition={currentCondition} isDay={isDay}>
+      <div className="space-y-8 p-1">
+        <WeatherSearch onSearch={handleSearch} />
 
-      {weatherError && (
-        <Card className="border-destructive/50">
-          <CardContent className="flex items-center gap-3 p-4">
-            <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
-            <p className="text-sm text-destructive">
-              {weatherError instanceof Error
-                ? weatherError.message
-                : 'Failed to load weather data. Please try again.'}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+        {weatherError && (
+          <Card className="border-destructive/50">
+            <CardContent className="flex items-center gap-3 p-4">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+              <p className="text-sm text-destructive">
+                {weatherError instanceof Error
+                  ? weatherError.message
+                  : 'Failed to load weather data. Please try again.'}
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-      {weatherLoading && <WeatherSkeleton />}
+        {weatherLoading && <WeatherSkeleton />}
 
-      {weatherData && (
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="flex-1 min-w-0 space-y-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">
-                {weatherData.current.location.city}, {weatherData.current.location.country}
-              </h2>
-              <SaveFavouriteButton weather={weatherData.current} />
+        {weatherData && (
+          <div className="flex flex-col lg:flex-row gap-8">
+            <div className="flex-1 min-w-0 space-y-8">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">
+                  {weatherData.current.location.city}, {weatherData.current.location.country}
+                </h2>
+                <SaveFavouriteButton weather={weatherData.current} />
+              </div>
+
+              <Tabs defaultValue="overview">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="hourly">Hourly</TabsTrigger>
+                  <TabsTrigger value="insights">Travel</TabsTrigger>
+                  <TabsTrigger value="health">Health</TabsTrigger>
+                  <TabsTrigger value="packing">Packing</TabsTrigger>
+                  <TabsTrigger value="destination">Destination</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="space-y-8">
+                  <CurrentWeather data={weatherData.current} />
+                  <ForecastCards forecast={weatherData.forecast} />
+                </TabsContent>
+
+                <TabsContent value="hourly">
+                  <HourlyForecast
+                    hourly={weatherData.hourly}
+                    timezone={weatherData.current.timezone}
+                  />
+                </TabsContent>
+
+                <TabsContent value="insights">
+                  {insightsLoading ? (
+                    <InsightsSkeleton />
+                  ) : insightsData ? (
+                    <WeatherInsights
+                      summary={insightsData.summary}
+                      insights={insightsData.insights}
+                      travelConditions={insightsData.travelConditions}
+                    />
+                  ) : null}
+                </TabsContent>
+
+                <TabsContent value="health">
+                  <HealthAdvisor current={weatherData.current} forecast={weatherData.forecast} />
+                </TabsContent>
+
+                <TabsContent value="packing">
+                  <PackingChecklist current={weatherData.current} forecast={weatherData.forecast} />
+                </TabsContent>
+
+                <TabsContent value="destination" className="space-y-8">
+                  <LocationMap
+                    latitude={weatherData.current.location.latitude}
+                    longitude={weatherData.current.location.longitude}
+                    city={weatherData.current.location.city}
+                  />
+                  <TravelVideos city={weatherData.current.location.city} />
+                </TabsContent>
+              </Tabs>
             </div>
 
-            <Tabs defaultValue="overview">
-              <TabsList className="mb-6">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="hourly">Hourly</TabsTrigger>
-                <TabsTrigger value="insights">Travel</TabsTrigger>
-                <TabsTrigger value="health">Health</TabsTrigger>
-                <TabsTrigger value="packing">Packing</TabsTrigger>
-                <TabsTrigger value="destination">Destination</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="overview" className="space-y-8">
-                <CurrentWeather data={weatherData.current} />
-                <ForecastCards forecast={weatherData.forecast} />
-              </TabsContent>
-
-              <TabsContent value="hourly">
-                <HourlyForecast
-                  hourly={weatherData.hourly}
-                  timezone={weatherData.current.timezone}
-                />
-              </TabsContent>
-
-              <TabsContent value="insights">
-                {insightsLoading ? (
-                  <InsightsSkeleton />
-                ) : insightsData ? (
-                  <WeatherInsights
-                    summary={insightsData.summary}
-                    insights={insightsData.insights}
-                    travelConditions={insightsData.travelConditions}
-                  />
-                ) : null}
-              </TabsContent>
-
-              <TabsContent value="health">
-                <HealthAdvisor current={weatherData.current} forecast={weatherData.forecast} />
-              </TabsContent>
-
-              <TabsContent value="packing">
-                <PackingChecklist current={weatherData.current} forecast={weatherData.forecast} />
-              </TabsContent>
-
-              <TabsContent value="destination" className="space-y-8">
-                <LocationMap
-                  latitude={weatherData.current.location.latitude}
-                  longitude={weatherData.current.location.longitude}
-                  city={weatherData.current.location.city}
-                />
-                <TravelVideos city={weatherData.current.location.city} />
-              </TabsContent>
-            </Tabs>
+            <aside className="lg:w-72 shrink-0">
+              <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
+                Favourites
+              </h3>
+              <FavouritesList onSelect={handleFavouriteSelect} />
+            </aside>
           </div>
+        )}
 
-          {/* Favourites sidebar */}
-          <aside className="lg:w-72 shrink-0">
-            <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
-              Favourites
-            </h3>
-            <FavouritesList onSelect={handleFavouriteSelect} />
-          </aside>
-        </div>
-      )}
-
-      {!weatherData && !weatherLoading && !weatherError && (
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="flex-1 text-center py-16 text-muted-foreground">
-            <p className="text-lg">Search for any location to see weather and travel insights.</p>
-            <p className="text-sm mt-2">
-              Try a city name, postal code, coordinates, or use your current location.
-            </p>
+        {!weatherData && !weatherLoading && !weatherError && (
+          <div className="flex flex-col lg:flex-row gap-8">
+            <div className="flex-1 text-center py-16 text-muted-foreground">
+              <p className="text-lg">Detecting your location...</p>
+              <p className="text-sm mt-2">
+                Or search for any city, postal code, or coordinates above.
+              </p>
+            </div>
+            <aside className="lg:w-72 shrink-0">
+              <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
+                Favourites
+              </h3>
+              <FavouritesList onSelect={handleFavouriteSelect} />
+            </aside>
           </div>
-          <aside className="lg:w-72 shrink-0">
-            <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
-              Favourites
-            </h3>
-            <FavouritesList onSelect={handleFavouriteSelect} />
-          </aside>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </WeatherBackground>
   );
 }
 

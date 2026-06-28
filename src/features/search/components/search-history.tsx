@@ -142,7 +142,15 @@ export function SearchHistory() {
                           <span>·</span>
                           <span>Humidity {search.humidity}%</span>
                           <span>·</span>
-                          <span>{format(new Date(search.createdAt), 'MMM d, yyyy h:mm a')}</span>
+                          <span>
+                            {(() => {
+                              try {
+                                return format(new Date(search.createdAt), 'MMM d, yyyy h:mm a');
+                              } catch {
+                                return 'Unknown date';
+                              }
+                            })()}
+                          </span>
                         </div>
                       </div>
                     </div>
