@@ -8,6 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { WeatherSearch } from '@/features/search/components/weather-search';
 import { FavouritesList } from '@/features/search/components/favourites-list';
 import { TravelVideos } from '@/features/travel/components/travel-videos';
+import { HealthAdvisor } from '@/features/travel/components/health-advisor';
+import { PackingChecklist } from '@/features/packing/components/packing-checklist';
 import { useWeather } from '../hooks/use-weather';
 import { useInsights } from '../hooks/use-insights';
 import { CurrentWeather } from './current-weather';
@@ -80,7 +82,9 @@ export function WeatherDashboard() {
               <TabsList className="mb-6">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="hourly">Hourly</TabsTrigger>
-                <TabsTrigger value="insights">Travel Insights</TabsTrigger>
+                <TabsTrigger value="insights">Travel</TabsTrigger>
+                <TabsTrigger value="health">Health</TabsTrigger>
+                <TabsTrigger value="packing">Packing</TabsTrigger>
                 <TabsTrigger value="destination">Destination</TabsTrigger>
               </TabsList>
 
@@ -106,6 +110,14 @@ export function WeatherDashboard() {
                     travelConditions={insightsData.travelConditions}
                   />
                 ) : null}
+              </TabsContent>
+
+              <TabsContent value="health">
+                <HealthAdvisor current={weatherData.current} forecast={weatherData.forecast} />
+              </TabsContent>
+
+              <TabsContent value="packing">
+                <PackingChecklist current={weatherData.current} forecast={weatherData.forecast} />
               </TabsContent>
 
               <TabsContent value="destination" className="space-y-8">
