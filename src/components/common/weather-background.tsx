@@ -33,7 +33,9 @@ export function WeatherBackground({ condition, isDay = true, children }: Weather
   const gradient = gradients[key] || gradients.default;
 
   return (
-    <div className={`min-h-full transition-colors duration-1000 bg-gradient-to-br ${gradient}`}>
+    <div
+      className={`min-h-full overflow-x-hidden transition-colors duration-1000 bg-gradient-to-br ${gradient}`}
+    >
       {children}
     </div>
   );

@@ -79,7 +79,7 @@ export function WeatherDashboard() {
 
   return (
     <WeatherBackground condition={currentCondition} isDay={isDay}>
-      <div className="space-y-8 container mx-auto px-4 py-6">
+      <div className="space-y-8 container mx-auto px-4 py-6 max-w-full overflow-hidden">
         <WeatherSearch onSearch={handleSearch} />
 
         {weatherError && (
@@ -106,7 +106,7 @@ export function WeatherDashboard() {
               </div>
 
               <Tabs defaultValue="overview">
-                <TabsList className="mb-6">
+                <TabsList className="mb-6 w-full overflow-x-auto overflow-y-hidden">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="hourly">Hourly</TabsTrigger>
                   <TabsTrigger value="insights">Travel</TabsTrigger>
