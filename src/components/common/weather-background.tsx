@@ -8,22 +8,22 @@ interface WeatherBackgroundProps {
 
 const gradients: Record<string, string> = {
   Clear:
-    'from-sky-100 via-blue-50 to-amber-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950',
+    'from-sky-400 via-blue-300 to-amber-200 dark:from-indigo-900 dark:via-blue-900 dark:to-slate-900',
   Clouds:
-    'from-gray-100 via-slate-100 to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800',
-  Rain: 'from-slate-200 via-blue-100 to-gray-200 dark:from-slate-950 dark:via-blue-950 dark:to-gray-900',
+    'from-slate-300 via-blue-200 to-gray-300 dark:from-slate-800 dark:via-gray-800 dark:to-slate-700',
+  Rain: 'from-slate-400 via-blue-300 to-gray-400 dark:from-slate-900 dark:via-blue-900 dark:to-gray-800',
   Drizzle:
-    'from-slate-100 via-blue-50 to-gray-100 dark:from-slate-900 dark:via-blue-950 dark:to-gray-900',
+    'from-slate-300 via-blue-200 to-gray-300 dark:from-slate-800 dark:via-blue-900 dark:to-gray-800',
   Thunderstorm:
-    'from-gray-300 via-slate-200 to-purple-100 dark:from-gray-950 dark:via-slate-950 dark:to-purple-950',
-  Snow: 'from-blue-50 via-white to-slate-100 dark:from-slate-900 dark:via-blue-950 dark:to-slate-800',
-  Mist: 'from-gray-100 via-slate-50 to-gray-100 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800',
-  Fog: 'from-gray-200 via-slate-100 to-gray-200 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800',
-  Haze: 'from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950 dark:via-orange-950 dark:to-slate-900',
+    'from-gray-500 via-slate-400 to-purple-300 dark:from-gray-900 dark:via-slate-900 dark:to-purple-900',
+  Snow: 'from-blue-100 via-white to-sky-200 dark:from-slate-800 dark:via-blue-900 dark:to-slate-700',
+  Mist: 'from-gray-300 via-slate-200 to-gray-300 dark:from-gray-800 dark:via-slate-800 dark:to-gray-700',
+  Fog: 'from-gray-400 via-slate-300 to-gray-400 dark:from-gray-800 dark:via-slate-800 dark:to-gray-700',
+  Haze: 'from-amber-300 via-orange-200 to-yellow-200 dark:from-amber-900 dark:via-orange-900 dark:to-slate-800',
   night:
-    'from-indigo-100 via-blue-100 to-slate-100 dark:from-indigo-950 dark:via-slate-950 dark:to-gray-950',
+    'from-indigo-800 via-blue-900 to-slate-900 dark:from-indigo-950 dark:via-slate-950 dark:to-gray-950',
   default:
-    'from-blue-50 via-white to-sky-50 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800',
+    'from-sky-300 via-blue-200 to-cyan-200 dark:from-slate-800 dark:via-gray-800 dark:to-slate-700',
 };
 
 export function WeatherBackground({ condition, isDay = true, children }: WeatherBackgroundProps) {
