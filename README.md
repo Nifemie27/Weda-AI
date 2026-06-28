@@ -255,6 +255,27 @@ The `vercel.json` configures:
 - Build command: `prisma generate && next build`
 - Security headers on API routes (nosniff, DENY framing, strict referrer)
 
+### Docker
+
+The project includes a multi-stage Dockerfile and docker-compose for containerised deployment.
+
+```bash
+# Run with Docker Compose (app + local PostgreSQL)
+docker compose up --build
+
+# Or build the image standalone
+docker build -t weda-weather .
+docker run -p 3000:3000 --env-file .env.local weda-weather
+```
+
+The Dockerfile uses a 3-stage build:
+
+1. **deps** — installs dependencies (cached layer)
+2. **builder** — generates Prisma client and builds Next.js (standalone output)
+3. **runner** — minimal Alpine image with only production artifacts (~150MB)
+
+`docker-compose.yml` includes a local PostgreSQL 16 instance, so you can develop without Supabase.
+
 ### Manual Build
 
 ```bash

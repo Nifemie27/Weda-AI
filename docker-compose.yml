@@ -1,0 +1,38 @@
+services:
+  # ── Local PostgreSQL (optional — use instead of Supabase for local dev) ──
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: weda
+      POSTGRES_PASSWORD: weda_local_dev
+      POSTGRES_DB: weda_weather
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U weda -d weda_weather"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Next.js Application ──
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      DATABASE_URL: postgresql://weda:weda_local_dev@db:5432/weda_weather
+      DIRECT_URL: postgresql://weda:weda_local_dev@db:5432/weda_weather
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
