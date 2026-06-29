@@ -23,24 +23,23 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/40 dark:bg-black/30 backdrop-blur-xl">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
-          <Cloud className="h-6 w-6 text-primary" />
-          <span className="text-lg font-bold tracking-tight">{APP_NAME}</span>
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/30 dark:bg-black/20 backdrop-blur-2xl">
+      <div className="container mx-auto flex h-14 items-center justify-between px-4">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <Cloud className="h-5 w-5 text-primary group-hover:rotate-12 transition-transform duration-300" />
+          <span className="text-base font-extrabold tracking-tight">{APP_NAME}</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
+        <nav className="hidden md:flex items-center gap-0.5" aria-label="Main navigation">
           {navigation.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'px-3 py-2 text-sm font-medium rounded-md transition-colors',
-                'hover:bg-accent hover:text-accent-foreground',
+                'px-3 py-1.5 text-sm font-medium rounded-xl transition-all duration-200',
                 pathname === item.href
-                  ? 'bg-accent text-accent-foreground'
-                  : 'text-muted-foreground'
+                  ? 'bg-white/20 dark:bg-white/10 text-foreground shadow-sm'
+                  : 'text-foreground/60 hover:text-foreground hover:bg-white/10'
               )}
             >
               {item.name}

@@ -69,7 +69,7 @@ export function WeatherSearch({
   return (
     <div ref={containerRef} className="relative w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 sm:h-5 w-4 sm:w-5 text-foreground/40" />
         <Input
           ref={inputRef}
           type="text"
@@ -82,7 +82,7 @@ export function WeatherSearch({
             if (inputValue.length >= 2) setIsOpen(true);
           }}
           placeholder={placeholder}
-          className="pl-10 pr-24 h-12 text-base bg-white/40 dark:bg-black/20 backdrop-blur-md border-white/30 dark:border-white/10"
+          className="pl-10 sm:pl-12 pr-20 sm:pr-28 h-12 sm:h-14 text-sm sm:text-base rounded-2xl bg-white/30 dark:bg-black/20 backdrop-blur-xl border-white/25 dark:border-white/10 shadow-lg shadow-black/5 focus-visible:ring-white/30 placeholder:text-foreground/30 font-medium"
           aria-label="Search for a location"
           aria-expanded={isOpen}
           aria-autocomplete="list"
