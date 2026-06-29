@@ -1,6 +1,7 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { STALE_TIME } from '@/lib/constants';
 import type { CurrentWeather, ForecastDay, HourlyForecast } from '../types';
@@ -12,7 +13,9 @@ interface WeatherData {
 }
 
 export function useWeather(query: string | null, lat?: number, lon?: number) {
-  return useQuery<WeatherData>({
+  const queryClient = useQueryClient();
+
+  const result = useQuery<WeatherData>({
     queryKey: ['weather', query, lat, lon],
     queryFn: () => {
       const params: Record<string, string | number> = {};
@@ -28,4 +31,12 @@ export function useWeather(query: string | null, lat?: number, lon?: number) {
     staleTime: STALE_TIME.WEATHER,
     retry: 1,
   });
+
+  useEffect(() => {
+    if (result.data) {
+      queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
+    }
+  }, [result.data, queryClient]);
+
+  return result;
 }
