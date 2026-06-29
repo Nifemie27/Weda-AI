@@ -11,6 +11,7 @@ import { WeatherBackground } from '@/components/common/weather-background';
 import { WeatherSearch } from '@/features/search/components/weather-search';
 import { FavouritesList } from '@/features/search/components/favourites-list';
 import { RecentSearchesSidebar } from '@/features/search/components/recent-searches-sidebar';
+import { SavedSidebar } from '@/features/search/components/saved-sidebar';
 import { TravelVideos } from '@/features/travel/components/travel-videos';
 import { HealthAdvisor } from '@/features/travel/components/health-advisor';
 import { PackingChecklist } from '@/features/packing/components/packing-checklist';
@@ -104,6 +105,12 @@ export function WeatherDashboard() {
         <div className="relative">
           {/* Left sidebar — recent searches (absolute, doesn't push content) */}
           <RecentSearchesSidebar
+            onSelect={(city, lat, lon) => handleSearch(city, lat, lon)}
+            activeCity={weatherData?.current?.location?.city}
+          />
+
+          {/* Right sidebar — saved locations */}
+          <SavedSidebar
             onSelect={(city, lat, lon) => handleSearch(city, lat, lon)}
             activeCity={weatherData?.current?.location?.city}
           />
