@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Poppins, JetBrains_Mono } from 'next/font/google';
 import { AppProviders } from '@/providers';
+import { OfflineBanner } from '@/components/common/offline-banner';
 import './globals.css';
 
 const poppins = Poppins({
@@ -38,6 +39,7 @@ export default function RootLayout({
       className={`${poppins.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans overflow-x-hidden">
+        <OfflineBanner />
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

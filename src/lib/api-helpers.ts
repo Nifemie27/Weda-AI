@@ -57,8 +57,25 @@ export async function withErrorHandling(
   } catch (error) {
     console.error('API Error:', error);
 
-    if (error instanceof Error && error.message.includes('Record to')) {
-      return errorResponse('NOT_FOUND', 'Resource not found', 404);
+    if (error instanceof Error) {
+      if (error.message.includes('Record to')) {
+        return errorResponse('NOT_FOUND', 'Resource not found', 404);
+      }
+
+      // Prisma connection / database failures
+      if (
+        error.name === 'PrismaClientInitializationError' ||
+        error.name === 'PrismaClientKnownRequestError' ||
+        error.name === 'PrismaClientRustPanicError' ||
+        error.message.toLowerCase().includes('connect') ||
+        error.message.toLowerCase().includes('database')
+      ) {
+        return errorResponse(
+          'DB_ERROR',
+          'We could not reach the database. Please try again shortly.',
+          503
+        );
+      }
     }
 
     return errorResponse(

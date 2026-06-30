@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WeatherBackground } from '@/components/common/weather-background';
+import { ErrorDisplay } from '@/components/common/error-display';
 import { WeatherSearch } from '@/features/search/components/weather-search';
 import { FavouritesList } from '@/features/search/components/favourites-list';
 import { RecentSearchesSidebar } from '@/features/search/components/recent-searches-sidebar';
@@ -45,6 +45,7 @@ export function WeatherDashboard() {
     return { query: null };
   });
 
+  const [gpsError, setGpsError] = useState<string | null>(null);
   const autoLocatedRef = useRef(false);
 
   useEffect(() => {
@@ -61,7 +62,15 @@ export function WeatherDashboard() {
           lon: position.coords.longitude,
         });
       },
-      () => {},
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setGpsError('Location access denied. Search for a city instead.');
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setGpsError('Could not determine your location. Search for a city instead.');
+        } else if (err.code === err.TIMEOUT) {
+          setGpsError('Location request timed out. Search for a city instead.');
+        }
+      },
       { enableHighAccuracy: false, timeout: 5000, maximumAge: 600000 }
     );
   }, [searchState.query]);
@@ -70,6 +79,7 @@ export function WeatherDashboard() {
     data: weatherData,
     isLoading: weatherLoading,
     error: weatherError,
+    refetch: refetchWeather,
   } = useWeather(searchState.query, searchState.lat, searchState.lon);
 
   const { data: insightsData, isLoading: insightsLoading } = useInsights(
@@ -79,6 +89,7 @@ export function WeatherDashboard() {
   );
 
   const handleSearch = useCallback((query: string, lat?: number, lon?: number) => {
+    setGpsError(null);
     setSearchState({ query, lat, lon });
   }, []);
 
@@ -117,15 +128,16 @@ export function WeatherDashboard() {
 
           {/* Main content — stays centered */}
           <div className="space-y-6">
+            {gpsError && !weatherData && (
+              <ErrorDisplay error={new Error(gpsError)} compact className="max-w-lg mx-auto" />
+            )}
+
             {weatherError && (
-              <div className="rounded-2xl bg-red-500/10 backdrop-blur-md border border-red-500/20 p-4 flex items-center gap-3">
-                <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
-                <p className="text-sm text-red-600 dark:text-red-400">
-                  {weatherError instanceof Error
-                    ? weatherError.message
-                    : 'Failed to load weather data. Please try again.'}
-                </p>
-              </div>
+              <ErrorDisplay
+                error={weatherError}
+                onRetry={() => refetchWeather()}
+                className="max-w-lg mx-auto"
+              />
             )}
 
             {weatherLoading && <WeatherSkeleton />}
