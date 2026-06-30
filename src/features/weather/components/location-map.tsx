@@ -25,6 +25,7 @@ export function LocationMap({ latitude, longitude, city, className }: LocationMa
 }
 
 function MapboxMap({ latitude, longitude, city, className }: LocationMapProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
   const markerRef = useRef<unknown>(null);
@@ -34,10 +35,22 @@ function MapboxMap({ latitude, longitude, city, className }: LocationMapProps) {
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!containerRef.current || !mapRef.current) return;
     let cancelled = false;
     setError(null);
     setReady(false);
+
+    // Wait until the container is actually visible (handles hidden tab panels)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          observer.disconnect();
+          initMap();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(containerRef.current);
 
     async function initMap() {
       try {
@@ -94,10 +107,9 @@ function MapboxMap({ latitude, longitude, city, className }: LocationMapProps) {
       }
     }
 
-    initMap();
-
     return () => {
       cancelled = true;
+      observer.disconnect();
     };
   }, [latitude, longitude, city, retryKey, resolvedTheme]);
 
@@ -123,8 +135,7 @@ function MapboxMap({ latitude, longitude, city, className }: LocationMapProps) {
   return (
     <Card className={className}>
       <CardContent className="p-0 overflow-hidden rounded-lg">
-        {/* Always render the map container so Mapbox can measure it */}
-        <div className="relative h-72 w-full">
+        <div ref={containerRef} className="relative h-72 w-full">
           <div ref={mapRef} className="absolute inset-0 z-0" />
           {!ready && <div className="absolute inset-0 z-10 animate-pulse bg-muted" />}
         </div>
