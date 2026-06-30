@@ -76,15 +76,12 @@ function MapboxMap({ latitude, longitude, city, className }: LocationMapProps) {
           .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(city))
           .addTo(map);
 
-        // Show the container as soon as the map renders its first frame
-        map.once('render', () => {
-          if (!cancelled) setReady(true);
+        map.on('load', () => {
+          if (!cancelled) {
+            map.resize();
+            setReady(true);
+          }
         });
-
-        // Fallback in case render event is slow
-        setTimeout(() => {
-          if (!cancelled && !ready) setReady(true);
-        }, 1500);
 
         map.on('error', () => {
           if (!cancelled) setError(new Error('Could not load the map. Please try again.'));
@@ -126,12 +123,11 @@ function MapboxMap({ latitude, longitude, city, className }: LocationMapProps) {
   return (
     <Card className={className}>
       <CardContent className="p-0 overflow-hidden rounded-lg">
-        {!ready && <Skeleton className="w-full h-72" />}
-        <div
-          ref={mapRef}
-          className="h-72 w-full z-0"
-          style={{ display: ready ? 'block' : 'none' }}
-        />
+        {/* Always render the map container so Mapbox can measure it */}
+        <div className="relative h-72 w-full">
+          <div ref={mapRef} className="absolute inset-0 z-0" />
+          {!ready && <div className="absolute inset-0 z-10 animate-pulse bg-muted" />}
+        </div>
       </CardContent>
     </Card>
   );
