@@ -46,7 +46,6 @@ export function WeatherDashboard() {
   });
 
   const [gpsError, setGpsError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
   const autoLocatedRef = useRef(false);
 
   useEffect(() => {
@@ -149,12 +148,7 @@ export function WeatherDashboard() {
                   <SaveFavouriteButton weather={weatherData.current} />
                 </div>
 
-                <Tabs
-                  defaultValue="overview"
-                  onValueChange={(val: string | null) => {
-                    if (val) setActiveTab(val);
-                  }}
-                >
+                <Tabs defaultValue="overview">
                   <div className="flex justify-center mb-6 -mx-4 px-4 overflow-x-auto">
                     <TabsList className="overflow-x-auto overflow-y-hidden bg-white/10 dark:bg-white/5 backdrop-blur-md rounded-full px-1 shrink-0">
                       <TabsTrigger value="overview" className="rounded-full text-xs">
@@ -218,13 +212,11 @@ export function WeatherDashboard() {
                   </TabsContent>
 
                   <TabsContent value="destination" className="space-y-6 max-w-2xl mx-auto">
-                    {activeTab === 'destination' && (
-                      <LocationMap
-                        latitude={weatherData.current.location.latitude}
-                        longitude={weatherData.current.location.longitude}
-                        city={weatherData.current.location.city}
-                      />
-                    )}
+                    <LocationMap
+                      latitude={weatherData.current.location.latitude}
+                      longitude={weatherData.current.location.longitude}
+                      city={weatherData.current.location.city}
+                    />
                     <TravelVideos city={weatherData.current.location.city} />
                   </TabsContent>
                 </Tabs>
