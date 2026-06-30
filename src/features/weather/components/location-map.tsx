@@ -37,6 +37,7 @@ function MapboxMap({ latitude, longitude, city, className }: LocationMapProps) {
     if (!mapRef.current) return;
     let cancelled = false;
     setError(null);
+    setReady(false);
 
     async function initMap() {
       try {
@@ -58,11 +59,13 @@ function MapboxMap({ latitude, longitude, city, className }: LocationMapProps) {
           container: mapRef.current,
           style:
             resolvedTheme === 'dark'
-              ? 'mapbox://styles/mapbox/dark-v11'
-              : 'mapbox://styles/mapbox/light-v11',
+              ? 'mapbox://styles/mapbox/navigation-night-v1'
+              : 'mapbox://styles/mapbox/streets-v12',
           center: [longitude, latitude],
           zoom: 11,
           attributionControl: false,
+          // Render immediately without waiting for all tiles
+          fadeDuration: 0,
         });
 
         map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
@@ -73,9 +76,15 @@ function MapboxMap({ latitude, longitude, city, className }: LocationMapProps) {
           .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(city))
           .addTo(map);
 
-        map.on('load', () => {
+        // Show the container as soon as the map renders its first frame
+        map.once('render', () => {
           if (!cancelled) setReady(true);
         });
+
+        // Fallback in case render event is slow
+        setTimeout(() => {
+          if (!cancelled && !ready) setReady(true);
+        }, 1500);
 
         map.on('error', () => {
           if (!cancelled) setError(new Error('Could not load the map. Please try again.'));
