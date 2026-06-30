@@ -1,5 +1,8 @@
 import type { GeocodingResult } from '../types';
 
+// Search Box API supports cities, towns, postal codes, landmarks/POIs, addresses
+const MAPBOX_SEARCH_URL = 'https://api.mapbox.com/search/searchbox/v1';
+// Geocoding v6 is used for reverse geocoding only
 const MAPBOX_GEOCODING_URL = 'https://api.mapbox.com/search/geocode/v6';
 
 class MapboxError extends Error {
@@ -18,51 +21,64 @@ function getAccessToken(): string {
   return token;
 }
 
-interface MapboxFeature {
+interface SearchBoxFeature {
   type: 'Feature';
   geometry: { type: 'Point'; coordinates: [number, number] };
   properties: {
     name: string;
+    name_preferred?: string;
     place_formatted?: string;
     full_address?: string;
     feature_type: string;
     context?: {
       country?: { name: string };
       region?: { name: string };
-      place?: { name: string };
-      postcode?: { name: string };
     };
   };
 }
 
-interface MapboxGeocodeResponse {
+interface SearchBoxResponse {
   type: 'FeatureCollection';
-  features: MapboxFeature[];
+  features: SearchBoxFeature[];
 }
 
-// Searches across cities, towns, postal codes, landmarks/POIs, and addresses in one call
+interface GeocodingFeature {
+  type: 'Feature';
+  geometry: { type: 'Point'; coordinates: [number, number] };
+  properties: {
+    name: string;
+    place_formatted?: string;
+    feature_type: string;
+    context?: {
+      country?: { name: string };
+      region?: { name: string };
+    };
+  };
+}
+
+interface GeocodingResponse {
+  type: 'FeatureCollection';
+  features: GeocodingFeature[];
+}
+
+// Searches across cities, towns, postal codes, landmarks/POIs, and addresses
 export async function geocodeForward(query: string, limit = 5): Promise<GeocodingResult[]> {
-  const url = new URL(`${MAPBOX_GEOCODING_URL}/forward`);
+  const url = new URL(`${MAPBOX_SEARCH_URL}/forward`);
   url.searchParams.set('q', query);
   url.searchParams.set('limit', String(limit));
   url.searchParams.set('access_token', getAccessToken());
-  // Search across places, postcodes, points of interest, addresses, regions
-  url.searchParams.set(
-    'types',
-    'country,region,postcode,district,place,locality,neighborhood,address,poi'
-  );
 
-  const response = await fetch(url.toString(), { next: { revalidate: 86400 } });
+  const response = await fetch(url.toString(), { next: { revalidate: 3600 } });
 
   if (!response.ok) {
     if (response.status === 401) throw new MapboxError(401, 'Mapbox authentication failed.');
     if (response.status === 429)
-      throw new MapboxError(429, 'Mapbox rate limit exceeded. Please try again shortly.');
+      throw new MapboxError(429, 'Too many requests. Please wait a moment.');
     throw new MapboxError(response.status, 'Failed to search for location.');
   }
 
-  const data: MapboxGeocodeResponse = await response.json();
-  return data.features.map(transformFeature);
+  const data: SearchBoxResponse = await response.json();
+  return data.features.map(transformSearchBoxFeature);
 }
 
 export async function reverseGeocodeMapbox(lat: number, lon: number): Promise<GeocodingResult[]> {
@@ -78,11 +94,11 @@ export async function reverseGeocodeMapbox(lat: number, lon: number): Promise<Ge
     throw new MapboxError(response.status, 'Failed to resolve coordinates to a location.');
   }
 
-  const data: MapboxGeocodeResponse = await response.json();
-  return data.features.map(transformFeature);
+  const data: GeocodingResponse = await response.json();
+  return data.features.map(transformGeocodingFeature);
 }
 
-function transformFeature(feature: MapboxFeature): GeocodingResult {
+function transformSearchBoxFeature(feature: SearchBoxFeature): GeocodingResult {
   const [lon, lat] = feature.geometry.coordinates;
   const props = feature.properties;
   const country = props.context?.country?.name || '';
@@ -96,9 +112,28 @@ function transformFeature(feature: MapboxFeature): GeocodingResult {
     place: 'place',
     locality: 'locality',
     neighborhood: 'locality',
+    street: 'address',
     address: 'address',
+    secondary_address: 'address',
     poi: 'poi',
   };
+
+  return {
+    name: props.name_preferred || props.name,
+    latitude: lat,
+    longitude: lon,
+    country,
+    state,
+    displayName: props.place_formatted || props.full_address || props.name,
+    placeType: featureTypeMap[props.feature_type] || 'place',
+  };
+}
+
+function transformGeocodingFeature(feature: GeocodingFeature): GeocodingResult {
+  const [lon, lat] = feature.geometry.coordinates;
+  const props = feature.properties;
+  const country = props.context?.country?.name || '';
+  const state = props.context?.region?.name;
 
   return {
     name: props.name,
@@ -106,8 +141,8 @@ function transformFeature(feature: MapboxFeature): GeocodingResult {
     longitude: lon,
     country,
     state,
-    displayName: props.place_formatted || props.full_address || props.name,
-    placeType: featureTypeMap[props.feature_type] || 'place',
+    displayName: props.place_formatted || props.name,
+    placeType: 'place',
   };
 }
 
