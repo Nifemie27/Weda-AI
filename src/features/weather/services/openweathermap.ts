@@ -219,7 +219,26 @@ export async function resolveLocation(
   lon?: number,
   zip?: string
 ): Promise<LocationInfo> {
+  // Mapbox handles city/town, postal code, landmark/POI, and address search
+  // in one unified geocoder, with a fallback to OpenWeatherMap if Mapbox
+  // isn't configured.
   if (lat !== undefined && lon !== undefined) {
+    try {
+      const { reverseGeocodeMapbox } = await import('./mapbox');
+      const results = await reverseGeocodeMapbox(lat, lon);
+      if (results.length > 0) {
+        return {
+          city: results[0].name,
+          country: results[0].country,
+          state: results[0].state,
+          latitude: lat,
+          longitude: lon,
+        };
+      }
+    } catch {
+      // fall through to OpenWeatherMap
+    }
+
     const results = await reverseGeocode(lat, lon);
     if (results.length === 0)
       throw new WeatherApiError(404, 'No location found for these coordinates.');
@@ -230,6 +249,26 @@ export async function resolveLocation(
       latitude: results[0].lat,
       longitude: results[0].lon,
     };
+  }
+
+  const searchTerm = query || zip;
+  if (searchTerm) {
+    try {
+      const { geocodeForward } = await import('./mapbox');
+      const results = await geocodeForward(searchTerm, 1);
+      if (results.length > 0) {
+        return {
+          city: results[0].name,
+          country: results[0].country,
+          state: results[0].state,
+          latitude: results[0].latitude,
+          longitude: results[0].longitude,
+        };
+      }
+      // Zero results from Mapbox — fall through to OpenWeatherMap as a backup
+    } catch {
+      // Mapbox not configured or failed — fall through to OpenWeatherMap
+    }
   }
 
   if (zip) {

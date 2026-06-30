@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  transpilePackages: ['mapbox-gl'],
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',

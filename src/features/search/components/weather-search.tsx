@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Search, MapPin, Loader2, X } from 'lucide-react';
+import { Search, MapPin, Loader2, X, Mailbox, Landmark, Building2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useGeocode } from '../hooks/use-geocode';
@@ -13,9 +13,22 @@ interface WeatherSearchProps {
   placeholder?: string;
 }
 
+function getPlaceIcon(placeType?: GeocodingResult['placeType']) {
+  switch (placeType) {
+    case 'postcode':
+      return Mailbox;
+    case 'poi':
+      return Landmark;
+    case 'address':
+      return Building2;
+    default:
+      return MapPin;
+  }
+}
+
 export function WeatherSearch({
   onSearch,
-  placeholder = 'Search city, town, postal code, or coordinates...',
+  placeholder = 'Search city, postal code, landmark, or address...',
 }: WeatherSearchProps) {
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -133,23 +146,40 @@ export function WeatherSearch({
               <span className="text-sm text-muted-foreground">Searching...</span>
             </div>
           ) : (
-            suggestions?.map((result, index) => (
-              <button
-                key={`${result.latitude}-${result.longitude}-${index}`}
-                type="button"
-                role="option"
-                className="flex items-center gap-3 w-full px-4 py-3 text-left text-sm hover:bg-accent transition-colors first:rounded-t-md last:rounded-b-md"
-                onClick={() => handleSelect(result)}
-              >
-                <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div>
-                  <span className="font-medium">{result.name}</span>
-                  <span className="text-muted-foreground">
-                    {result.state ? `, ${result.state}` : ''}, {result.country}
-                  </span>
-                </div>
-              </button>
-            ))
+            suggestions?.map((result, index) => {
+              const Icon = getPlaceIcon(result.placeType);
+              return (
+                <button
+                  key={`${result.latitude}-${result.longitude}-${index}`}
+                  type="button"
+                  role="option"
+                  className="flex items-center gap-3 w-full px-4 py-3 text-left text-sm hover:bg-accent transition-colors first:rounded-t-md last:rounded-b-md"
+                  onClick={() => handleSelect(result)}
+                >
+                  <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="font-medium">{result.name}</span>
+                    <span className="text-muted-foreground">
+                      {result.state ? `, ${result.state}` : ''}
+                      {result.country ? `, ${result.country}` : ''}
+                    </span>
+                  </div>
+                  {result.placeType && result.placeType !== 'place' && (
+                    <span className="text-[10px] uppercase tracking-wide text-muted-foreground/60 shrink-0">
+                      {result.placeType === 'postcode'
+                        ? 'Postal Code'
+                        : result.placeType === 'poi'
+                          ? 'Landmark'
+                          : result.placeType === 'address'
+                            ? 'Address'
+                            : result.placeType === 'region'
+                              ? 'Region'
+                              : result.placeType}
+                    </span>
+                  )}
+                </button>
+              );
+            })
           )}
         </div>
       )}

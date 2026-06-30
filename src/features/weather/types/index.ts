@@ -205,4 +205,5 @@ export interface GeocodingResult {
   country: string;
   state?: string;
   displayName: string;
+  placeType?: 'place' | 'postcode' | 'poi' | 'address' | 'region' | 'locality' | 'country';
 }
