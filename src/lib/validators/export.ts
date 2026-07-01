@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const exportRequestSchema = z.object({
-  format: z.enum(['JSON', 'CSV', 'PDF', 'MARKDOWN']),
+  format: z.enum(['JSON', 'CSV', 'PDF', 'MARKDOWN', 'XML']),
   exportType: z.enum(['WEATHER_SEARCH', 'TRIP', 'SEARCH_HISTORY', 'TRIP_HISTORY', 'COMPARISON']),
   recordId: z.string().optional(),
 });

@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useExport } from '../hooks/use-export';
 
-type ExportFormat = 'JSON' | 'CSV' | 'PDF' | 'MARKDOWN';
+type ExportFormat = 'JSON' | 'CSV' | 'PDF' | 'MARKDOWN' | 'XML';
 type ExportType = 'WEATHER_SEARCH' | 'TRIP' | 'SEARCH_HISTORY' | 'TRIP_HISTORY' | 'COMPARISON';
 
 interface ExportButtonProps {
@@ -24,6 +24,7 @@ interface ExportButtonProps {
 const formatConfig: { format: ExportFormat; label: string; icon: typeof FileJson }[] = [
   { format: 'JSON', label: 'JSON', icon: FileJson },
   { format: 'CSV', label: 'CSV', icon: FileSpreadsheet },
+  { format: 'XML', label: 'XML', icon: FileText },
   { format: 'PDF', label: 'PDF', icon: FileType },
   { format: 'MARKDOWN', label: 'Markdown', icon: FileText },
 ];

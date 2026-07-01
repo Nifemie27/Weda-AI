@@ -8,6 +8,33 @@ export function toJSON(data: ExportableRecord | ExportableRecord[]): string {
   return JSON.stringify(data, null, 2);
 }
 
+export function toXML(data: ExportableRecord | ExportableRecord[], rootTag = 'records'): string {
+  const records = Array.isArray(data) ? data : [data];
+  const itemTag = rootTag === 'records' ? 'record' : rootTag.replace(/s$/, '');
+
+  function valueToXml(key: string, value: unknown): string {
+    if (value === null || value === undefined) return `  <${key}/>`;
+    if (value instanceof Date) return `  <${key}>${value.toISOString()}</${key}>`;
+    if (typeof value === 'object') return `  <${key}>${JSON.stringify(value)}</${key}>`;
+    const escaped = String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    return `  <${key}>${escaped}</${key}>`;
+  }
+
+  const items = records
+    .map((record) => {
+      const fields = Object.entries(record)
+        .map(([k, v]) => valueToXml(k, v))
+        .join('\n');
+      return `<${itemTag}>\n${fields}\n</${itemTag}>`;
+    })
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<${rootTag}>\n${items}\n</${rootTag}>`;
+}
+
 export function toCSV(data: ExportableRecord[]): string {
   if (data.length === 0) return '';
 

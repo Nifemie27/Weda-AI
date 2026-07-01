@@ -2,7 +2,7 @@ import { type NextRequest } from 'next/server';
 import { errorResponse, withErrorHandling, getDeviceIdFromHeaders } from '@/lib/api-helpers';
 import { exportRequestSchema } from '@/lib/validators';
 import { prisma } from '@/lib/prisma';
-import { toJSON, toCSV, toMarkdown, toPDF } from '@/features/export/services/export-service';
+import { toJSON, toCSV, toMarkdown, toPDF, toXML } from '@/features/export/services/export-service';
 import type { WeatherSearch, Trip } from '@/generated/prisma/client';
 
 type ExportableRecord = WeatherSearch | Trip;
@@ -12,6 +12,7 @@ const CONTENT_TYPES: Record<string, string> = {
   CSV: 'text/csv',
   PDF: 'application/pdf',
   MARKDOWN: 'text/markdown',
+  XML: 'application/xml',
 };
 
 const EXTENSIONS: Record<string, string> = {
@@ -19,6 +20,7 @@ const EXTENSIONS: Record<string, string> = {
   CSV: 'csv',
   PDF: 'pdf',
   MARKDOWN: 'md',
+  XML: 'xml',
 };
 
 export async function POST(request: NextRequest) {
@@ -52,6 +54,9 @@ export async function POST(request: NextRequest) {
         break;
       case 'MARKDOWN':
         content = toMarkdown(data, title);
+        break;
+      case 'XML':
+        content = toXML(data, title.toLowerCase().replace(/\s+/g, '_'));
         break;
       case 'PDF': {
         const buf = toPDF(data, title);

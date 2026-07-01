@@ -24,6 +24,7 @@ enum ExportFormat {
   CSV
   PDF
   MARKDOWN
+  XML
 }
 
 enum ExportType {

@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { getDeviceId } from '@/hooks/use-device-id';
 
 interface ExportParams {
-  format: 'JSON' | 'CSV' | 'PDF' | 'MARKDOWN';
+  format: 'JSON' | 'CSV' | 'PDF' | 'MARKDOWN' | 'XML';
   exportType: 'WEATHER_SEARCH' | 'TRIP' | 'SEARCH_HISTORY' | 'TRIP_HISTORY' | 'COMPARISON';
   recordId?: string;
 }
